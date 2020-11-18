@@ -39,6 +39,58 @@ Here's a cherry-picked list of some of the packages I use:
 
 * Process
 
+First thing in the file is going to be the file header. It's useful to
+add a little description and enable lexical binding (it's all the rage
+these days).
+
+#+begin_src emacs-lisp
+;;; Igloo --- The glue connecting my whole operating experience. YMMV -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;; Read https://github.com/VojtechStep/igloo.el/blob/master/igloo.org
+;;
+;; DO NOT CHANGE THIS FILE
+;; This file is generated from `igloo.org' and will be overwritten on
+;; every invocation of `make'
+
+;;; Code:
+#+end_src
+
+This configuration is built on the simple principle of "do what you
+can at compile time". This means that we have to properly
+differentiate what happens at comptime (via `eval-when-compile`), what
+happens at runtime (via plain forms) and what happens during both (via
+`eval-and-compile`).
+
+To look up if we are executing in compilation or not, we set a variable to true only during compilation:
+
+#+begin_src emacs-lisp
+(eval-and-compile
+  (defvar vs/--compiling nil
+    "Non-nill if read when compiling."))
+
+(eval-when-compile
+  (setq vs/--compiling t))
+#+end_src
+
+First, the package manager is installed and configured at compile
+time. At runtime, we only load it via its entry point, the bootstrap
+file.
+
+The =use-package= clauses need to be evaluated at both comptime, to
+clone and build the packages, and at runtime to expose them to the
+system.
+
+For this reason, we define a macro to substitute the =(use-package ...)=
+form with.
+
+#+begin_src emacs-lisp
+(eval-when-compile
+  (defmacro vs/use-package (&rest body)
+    "Passes BODY to `use-package' and call it at comptime and runtime."
+    `(eval-and-compile
+       ,(cons 'use-package body))))
+#+end_src
 
 * Initialization
 
@@ -63,3 +115,9 @@ Here's a cherry-picked list of some of the packages I use:
 ** Code blocks
 
 * Development
+
+
+#+begin_src emacs-lisp
+(provide 'init)
+;;; init.el ends here
+#+end_src
