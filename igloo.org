@@ -99,11 +99,131 @@ form with.
 :header-args: :tangle early-init.el
 :END:
 
+Emacs 27 added =early-init.el=, which is a file that gets loaded very
+early in the process (hence the name).
+
+As a good citizen, we start this file with a header.
+
+#+begin_src emacs-lisp
+;;; Igloo --- Early init file -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;; Read https://github.com/VojtechStep/igloo.el/blob/master/igloo.org
+;;
+;; DO NOT CHANGE THIS FILE
+;; This file is generated from `igloo.org' and will be overwritten on
+;; every invocation of `make'
+
+;;; Code:
+(eval-when-compile (require 'cl-lib))
+#+end_src
 
 *** Startup Optimizations
 
+Many of the startup optimizations were inspired by [[https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#how-does-doom-start-up-so-quickly][how Doom does it]]. I recommend reading it, since not all the tricks are used here, only the ones that noticeably improved the loading times for me.
+
+In order to reduce the startup time of Emacs, we can employ several techniques. The most important part is deferred package loading, to which we will get in [[*Package management][Package management]].
+
+Other than that, we can start by looking into the garbage collector. The garbage collector runs when there is garbage to be picked up, that is when objects on the heap are being abandoned. We can influence when the garbage collection runs. If we wanted to have a lower memory footprint, we would want GC to run more frequently. However, in this case, we can live with a little memory spike if it provides us with a snappier experience.
+
+Emacs garbage collector can run once the amount of allocated memory since the last GC run reaches a certain threshold, which is 8MB by default. This number is ridiculously small for most, so we increase it to about 100 megs.
+
+Starting up is where a lot of garbage can be created, so it's easiest to pretty much disable garbage collection as soon as possible in the initialization, and re-enable it after Emacs starts. Another small-object sensitive workflows are minibuffer operations and company completion, so disable GC during those two too.
+
+Furthermore, when enabling garbage collection, do so in a deferred manner, that is run it only after a second passes since the task (minibuffer action, completion) ends. This way, the thing running just after will still be free of garbage collection.
+
+#+begin_src emacs-lisp
+(defconst vs/--gc-threshold (* 100 1024 1024))
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.6
+      read-process-output-max (* 1024 1024))
+
+(defun vs/--startup-cleanup ()
+  "Reset settings disabled for faster startup."
+  (setq gc-cons-threshold vs/--gc-threshold
+        gc-cons-percentage 0.1))
+(add-hook 'emacs-startup-hook #'vs/--startup-cleanup)
+
+
+(defun vs/--gc-disable (&rest _)
+  "Disable garbage collection."
+  (setq gc-cons-threshold most-positive-fixnum))
+(add-hook 'minibuffer-setup-hook #'vs/--gc-disable)
+(add-hook 'company-completion-started-hook #'vs/--gc-disable)
+
+(defun vs/--gc-enable ()
+  "Enable garbage collection."
+  (setq gc-cons-threshold vs/--gc-threshold))
+(defun vs/--defer-gc-enable (&rest _)
+  "Enable garbage collection, defered."
+  (run-at-time 1 nil #'vs/--gc-enable))
+(add-hook 'minibuffer-exit-hook #'vs/--defer-gc-enable)
+(add-hook 'company-completion-finished-hook #'vs/--defer-gc-enable)
+
+#+end_src
 
 *** Early visual stuff
+
+#+begin_src emacs-lisp
+;; Set the look-and-feel as early in the pipeline as possible to
+;; avoid doing unnecessary work
+
+;; Frame parameters, see
+;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Window-Frame-Parameters.html
+(setq default-frame-alist
+      (append
+       '(
+         ;; Hide vertical scroll bars
+         (vertical-scroll-bars . nil)
+         ;; Excersise to the reader
+         (horizontal-scroll-bars . nil)
+         ;; Hide the File, Edit, Options, ... menu bar
+         (menu-bar-lines . 0)
+         ;; Hide the Save, Open, Search, ... icon bar
+         (tool-bar-lines . 0)
+         ;; Take a wild guess
+         (font . "JetBrains Mono"))
+       default-frame-alist))
+
+;; Other visual candy
+(set-face-attribute 'default nil :height 130)
+(setq no-blinking-cursor t)
+
+;; Use all the space allocated by the window manager
+(setq-default frame-resize-pixelwise t
+              frame-inhibit-implied-resize t)
+
+#+end_src
+
+*** Other optimizations
+
+#+begin_src emacs-lisp
+;; Disable loading resources via X (that's what this file is for)
+(advice-add #'x-apply-session-resources :override #'ignore)
+
+;; Disable VC (real men use Magit)
+(setq vc-handled-backends nil
+      vc-follow-symlinks t)
+
+;; Disable package.el
+(setq package-enable-at-startup nil)
+
+;; Try loading the theme before showing the first frame to avoid flicker
+(defvar vs/--loaded-theme nil)
+(when (load (expand-file-name
+             (concat "straight/repos/"
+                     "color-theme-sanityinc-tomorrow/"
+                     "color-theme-sanityinc-tomorrow.el")
+             user-emacs-directory)
+            t)
+  (setq vs/--loaded-theme
+        (load-theme 'sanityinc-tomorrow-night t)))
+#+end_src
+
+#+begin_src emacs-lisp
+(provide 'early-init)
+;;; early-init.el ends here
+#+end_src
 
 ** Package management
 
