@@ -1,0 +1,35 @@
+#+TITLE: Igloo - The Emacs Glue
+#+AUTHOR: VojtechStep
+#+BABEL: :cache yes
+#+PROPERTY: header-args :tangle init.el
+
+* About
+
+** Dependencies
+
+* Process
+
+
+* Initialization
+
+** Early init
+:PROPERTIES:
+:header-args: :tangle early-init.el
+:END:
+
+
+*** Startup Optimizations
+
+
+*** Early visual stuff
+
+** Package management
+
+** UI/UX
+
+* Email
+* Org
+** Exports
+** Code blocks
+
+* Development
