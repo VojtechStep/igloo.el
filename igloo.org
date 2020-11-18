@@ -349,6 +349,13 @@ Stuff from my previous init I either didn't understand or don't think I need any
 ** Exports
 ** Code blocks
 
+#+begin_src emacs-lisp
+(defun vs/--org-setup-src-buffer ()
+  (when (fboundp 'flycheck-disable-checker)
+    (flycheck-disable-checker 'emacs-lisp-checkdoc)))
+(add-hook 'org-src-mode-hook #'vs/--org-setup-src-buffer)
+#+end_src
+
 * Development
 
 
