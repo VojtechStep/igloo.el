@@ -294,6 +294,56 @@ Now that the package manager is loaded, start configuring packages.
 
 ** UI/UX
 
+As for the appearance, I'm not a huge fan of the startup screen, so disable it.
+I also consider myself a 1337 h4x0r, so don't nag me about advanced-level commands.
+I use [[https://github.com/raxod502/selectrum][selectrum]] as a completion framework (more on that later), so I don't care much about shorter ways I can type in the command.
+
+#+begin_src emacs-lisp
+(setq inhibit-startup-screen t
+      disabled-command-function nil
+      extended-command-suggest-shorter nil)
+#+end_src
+
+This adds VIM-like (read: correct) scrolling behavior: only scroll one line at a time, keep a fixed number of visible lines around the cursor and /never/ recenter when the cursor goes off screen (honestly, why is that even a thing).
+
+#+begin_src emacs-lisp
+(setq-default scroll-step 1
+              scroll-margin 3
+              scroll-conservatively 101)
+#+end_src
+
+There is no yes/no question important enough to require up to three key presses more then necessary, so make all yes/no prompts into y/n prompts.
+
+#+begin_src emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+I do love myself some dark theme. I go with [[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow night]].
+
+#+begin_src emacs-lisp
+(vs/use-package color-theme-sanityinc-tomorrow
+                :straight t
+                :demand
+                :config
+                (load-theme 'sanityinc-tomorrow-night t))
+#+end_src
+
+Stuff from my previous init I either didn't understand or don't think I need any more, keeping it here for reference (not tangled):
+
+#+begin_src emacs-lisp :tangle no
+;; This was in early-init, supposed to help with startup, maybe try and bench it
+;; Reference: https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#unset-file-name-handler-alist-temporarily
+(defvar vs/--file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
+
+;; I keep going back and forth on this
+(setq suggest-key-bindings nil)
+
+;; Font rendering performance tips
+(setq-default font-lock-support-mode 'jit-lock-mode)
+(setq-default font-lock-multiline t)
+#+end_src
+
 * Email
 * Org
 ** Exports
