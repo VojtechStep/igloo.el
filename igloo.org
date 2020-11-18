@@ -4,6 +4,36 @@
 #+PROPERTY: header-args :tangle init.el
 
 * About
+#+begin_quote
+/History is scraps of evidence joined by the glue of imagination/
+#+end_quote
+​- First image on duckduckgo for the query "famous glue quote"
+
+This repo is my literate Emacs configuration. If you are unfamiliar with what literate programming is, basically every code snippet in this file gets yoinked out and put into the =init.el= file, which then serves as an init script for Emacs. Writing the configuration in an org file allows for (in my opinion) better documentation and organization.
+
+To achieve the best performance, the configuration requires a build step.
+
+Running =make= will collect all the code into =init.el= (and =early-init.el=, more on that later) and byte compile it. Once I get my hands dirty with [[https://www.emacswiki.org/emacs/GccEmacs][native compilation]], I hope to make use of it too. It will also initialize the package manager and pull all dependencies, so if you add any remote packages, it will require an internet connection.
+
+Running =make install= will put the compiled and source files into =$PREFIX/emacs/= (PREFIX is =build= by default). If you want to OVERWRITE your existing configuration, you can use =make install PREFIX=$HOME/.config=. This does NO BACKUP. Use at your own risk.
+
+Here's a cherry-picked list of some of the packages I use:
+- [[https://github.com/emacs-evil/evil][evil-mode]] for Vim keybindings
+- [[https://github.com/emacs-evil/evil-collection][evil-collection]] to get Vim keybindings where they ain't
+- [[https://github.com/raxod502/straight.el][straight.el]] for package management
+- [[https://github.com/jwiegley/use-package][use-package]] for package configuration
+- [[https://github.com/noctuid/general.el][general.el]] for keybinding management
+- [[https://github.com/bbatsov/projectile/][projectile]] for project management
+- [[https://github.com/raxod502/selectrum][selectrum]] for incremental narrowing
+- [[https://github.com/magit/magit][Magit]] for interfacing with Git
+- [[https://github.com/skk-dev/ddskk][ddskk]] for Japanese input
+- [[https://github.com/company-mode/company-mode][company-mode]] for completion
+- [[https://github.com/djcb/mu][mu4e]] for mail
+- [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]] for smart code completion and navigation
+- [[https://github.com/flycheck/flycheck][flycheck]] for error reporting
+- [[https://github.com/raxod502/apheleia][apheleia]] for code formatting
+- [[https://www.gnu.org/software/emacs/erc.html][ERC]] as an IRC client
+- [[https://github.com/skeeto/elfeed][elfeed]] as an RSS reader
 
 ** Dependencies
 
