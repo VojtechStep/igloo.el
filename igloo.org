@@ -290,8 +290,8 @@ First, to be able to install packages, bootstrap [[https://github.com/raxod502/s
 [[https://github.com/jwiegley/use-package][use-package]].
 
 Configure straight to run on the bleeding edge and use ssh by default
-to clone repositories.
-Those need to be =defvar='s, because neither straight or use-package have been loaded at this point.
+to clone repositories. Those need to be =defvar='s, because neither
+straight or use-package have been loaded at this point.
 
 #+begin_src emacs-lisp
 (defvar straight-check-for-modifications '(find-when-checking check-on-save))
@@ -300,7 +300,10 @@ Those need to be =defvar='s, because neither straight or use-package have been l
 (defvar straight-vc-git-default-clone-depth 'full)
 #+end_src
 
-Also, configure use-package to defer by default (without having to specify =:defer t=) and capture statistics. The verbosity is useful for debugging.
+Also, configure use-package to defer by default (without having to
+specify =:defer t=) and capture statistics (which can be shown by
+calling =use-package-report=). The verbosity is useful for
+debugging.
 
 #+begin_src emacs-lisp
 (defvar use-package-compute-statistics t)
@@ -353,9 +356,14 @@ Now that the package manager is loaded, start configuring packages.
 
 ** UI/UX
 
-As for the appearance, I'm not a huge fan of the startup screen, so disable it.
-I also consider myself a 1337 h4x0r, so don't nag me about advanced-level commands.
-I use [[https://github.com/raxod502/selectrum][selectrum]] as a completion framework (more on that later), so I don't care much about shorter ways I can type in the command.
+As for the appearance, I'm not a huge fan of the startup screen, so
+disable it.
+
+I also consider myself a 1337 h4x0r, so don't nag me about
+advanced-level commands.
+
+I use [[https://github.com/raxod502/selectrum][selectrum]] as a completion framework (more on that later), so I
+don't care much about shorter ways I can type in commands.
 
 #+begin_src emacs-lisp
 (setq inhibit-startup-screen t
@@ -363,7 +371,10 @@ I use [[https://github.com/raxod502/selectrum][selectrum]] as a completion frame
       extended-command-suggest-shorter nil)
 #+end_src
 
-This adds VIM-like (read: correct) scrolling behavior: only scroll one line at a time, keep a fixed number of visible lines around the cursor and /never/ recenter when the cursor goes off screen (honestly, why is that even a thing).
+This adds VIM-like (read: correct) scrolling behavior: only scroll one
+line at a time, keep a fixed number of visible lines around the cursor
+and /never/ recenter when the cursor goes off screen (honestly, why is
+that even a thing).
 
 #+begin_src emacs-lisp
 (setq-default scroll-step 1
@@ -371,7 +382,9 @@ This adds VIM-like (read: correct) scrolling behavior: only scroll one line at a
               scroll-conservatively 101)
 #+end_src
 
-There is no yes/no question important enough to require up to three key presses more then necessary, so make all yes/no prompts into y/n prompts.
+There is no yes/no question important enough to require up to three
+key presses more then necessary, so make all yes/no prompts into y/n
+prompts.
 
 #+begin_src emacs-lisp
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -381,13 +394,14 @@ I do love myself some dark theme. I go with [[https://github.com/purcell/color-t
 
 #+begin_src emacs-lisp
 (vs/use-package color-theme-sanityinc-tomorrow
-                :straight t
-                :demand
-                :config
-                (load-theme 'sanityinc-tomorrow-night t))
+  :straight t
+  :demand
+  :config
+  (load-theme 'sanityinc-tomorrow-night t))
 #+end_src
 
-Stuff from my previous init I either didn't understand or don't think I need any more, keeping it here for reference (not tangled):
+Stuff from my previous init I either didn't understand or don't think
+I need any more, keeping it here for reference (not tangled):
 
 #+begin_src emacs-lisp :tangle no
 ;; This was in early-init, supposed to help with startup, maybe try and bench it
