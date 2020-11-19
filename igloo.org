@@ -305,6 +305,16 @@ specify =:defer t=) and capture statistics (which can be shown by
 calling =use-package-report=). The verbosity is useful for
 debugging.
 
+Deferring package loading is useful to improve startup time, because
+it means that the packages themselves aren't loaded and initialized on
+startup, only their autoloads are (autoloads are a mechanism for a
+file to export functions that trigger a loading of the file they are
+defined in when called).
+
+The =use-package-verbose= is useful when you want to diagnose a problem
+with package loading - for example to see which packages take a long
+time to load, or when are packages loaded and configured.
+
 #+begin_src emacs-lisp
 (defvar use-package-compute-statistics t)
 (defvar use-package-always-defer t)
@@ -321,7 +331,7 @@ and runtime.
 #+end_src
 
 Install the package manager if it can't be found. This only happens
-at compile time.
+at compile time. At runtime, it is assumed that the package manager is installed.
 
 #+begin_src emacs-lisp
 (eval-when-compile
