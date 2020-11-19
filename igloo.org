@@ -36,6 +36,8 @@ Here's a cherry-picked list of some of the packages I use:
 - [[https://github.com/skeeto/elfeed][elfeed]] as an RSS reader
 
 ** Dependencies
+- [[https://www.gnu.org/software/make/][GNU Make]]
+- [[https://www.gnu.org/software/emacs/][GNU Emacs]] (only tested with versions 27+)
 
 * Process
 
