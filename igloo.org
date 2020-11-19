@@ -88,6 +88,7 @@ form with.
 (eval-when-compile
   (defmacro vs/use-package (&rest body)
     "Passes BODY to `use-package' and call it at comptime and runtime."
+    (declare (indent defun))
     `(eval-and-compile
        ,(cons 'use-package body))))
 #+end_src
@@ -101,6 +102,34 @@ form with.
 
 Emacs 27 added =early-init.el=, which is a file that gets loaded very
 early in the process (hence the name).
+
+A word of warning: the documentation states that =early-init.el= should
+be used for "customizing how the package system is initialized" and
+"customizations [...] that need to be set up before initializing",
+because "the early init file is read too early into the startup
+process".
+
+From [[https://git.savannah.gnu.org/cgit/emacs.git/tree/etc/NEWS.27#n206][etc/NEWS.27]]:
+
+#+begin_example
+,** Emacs can now be configured using an early init file.
+The file is called "early-init.el", in 'user-emacs-directory'.  It is
+loaded very early in the startup process: before graphical elements
+such as the tool bar are initialized, and before the package manager
+is initialized.  The primary purpose is to allow customizing how the
+package system is initialized given that initialization now happens
+before loading the regular init file (see below).
+
+We recommend against putting any customizations in this file that
+don't need to be set up before initializing installed add-on packages,
+because the early init file is read too early into the startup
+process, and some important parts of the Emacs session, such as
+'window-system' and other GUI features, are not yet set up, which could
+make some customization fail to work.
+
+#+end_example
+
+I try not to abuse the early init system, but I do some UI stuff that makes sense to me.
 
 As a good citizen, we start this file with a header.
 
@@ -123,6 +152,8 @@ As a good citizen, we start this file with a header.
 Many of the startup optimizations were inspired by [[https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#how-does-doom-start-up-so-quickly][how Doom does it]]. I recommend reading it, since not all the tricks are used here, only the ones that noticeably improved the loading times for me.
 
 In order to reduce the startup time of Emacs, we can employ several techniques. The most important part is deferred package loading, to which we will get in [[*Package management][Package management]].
+
+**** GC Optimization
 
 Other than that, we can start by looking into the garbage collector. The garbage collector runs when there is garbage to be picked up, that is when objects on the heap are being abandoned. We can influence when the garbage collection runs. If we wanted to have a lower memory footprint, we would want GC to run more frequently. However, in this case, we can live with a little memory spike if it provides us with a snappier experience.
 
@@ -162,62 +193,88 @@ Furthermore, when enabling garbage collection, do so in a deferred manner, that 
 
 #+end_src
 
-*** Early visual stuff
+**** Other optimizations
+
+We can make more optimizations by telling Emacs not to do stuff we
+manage ourselves.
+
+For starters, the look and feel (things like non-blinking cursor, menu
+bar, font, ...) is configured in this file, not via X resources, so
+throw the loading of those resources out of the equation.
+
+We also don't use the =vc= framework for controlling various version
+control systems, so pretend it doesn't exist by never enabling it,
+ever (from docs: "An empty list disables VC altogether").
+
+Another important feature we throw out the window is Emacs builtin
+package management. It would otherwise initialize itself during
+startup, and that's just not groovy.
 
 #+begin_src emacs-lisp
-;; Set the look-and-feel as early in the pipeline as possible to
-;; avoid doing unnecessary work
+(advice-add #'x-apply-session-resources :override #'ignore)
 
-;; Frame parameters, see
-;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Window-Frame-Parameters.html
+(setq vc-handled-backends nil)
+
+(setq package-enable-at-startup nil)
+#+end_src
+
+*** Early visual stuff
+
+As mentioned, the GNU developers warn against using early init for
+graphical stuff. In this section, we are using early init for
+graphical stuff. Most of the settings are here to prevent their
+initialization, because it would just be wasteful to initialize them
+and then disable them later.
+
+First of all, we set the default parameters of new frames. Since early
+init is done so early, they also apply to the first created frame. We
+hide all the scrollbars and set the default font and background color.
+
+We set the font because it doesn't make sense to let Emacs load a font
+that's going to get replaced later. Depending on the font you choose,
+it might be necessary to change the default height, which is counted
+in 0.1pt.
+
+The background color is hardcoded and you should set it to the same
+background color as your main theme. It's set here because we want to
+avoid another color flashing the frame before the theme is loaded.
+
+We could also set the =menu-bar-lines= and =tool-bar-lines= variables to nil to
+disable the menu bar and tool bar. Instead, we disable them by
+settings the variables =menu-bar-mode= and =tool-bar-mode=. The effect is
+the same, because the modes work by setting the frame parameters, but
+also Emacs doesn't think those mode are enabled when they aren't.
+
+We also disable the blinking cursor, because who came up with that?
+
+Furthermore, =frame-resize-pixelwise= makes Emacs not align the window
+size to character size. This is useful, because otherwise Emacs might
+not play along with tiling window managers.
+=frame-inhibit-implied-resize= set to t disables implicit resizing of
+the frame by for example enabling the toolbar, the scrollbar or
+changing fonts. The default setting is to preserve the number of
+characters shown on screen, not the window size.
+
+#+begin_src emacs-lisp
 (setq default-frame-alist
       (append
-       '(
-         ;; Hide vertical scroll bars
-         (vertical-scroll-bars . nil)
-         ;; Excersise to the reader
+       '((vertical-scroll-bars . nil)
          (horizontal-scroll-bars . nil)
-         ;; Hide the File, Edit, Options, ... menu bar
-         (menu-bar-lines . 0)
-         ;; Hide the Save, Open, Search, ... icon bar
-         (tool-bar-lines . 0)
-         ;; Take a wild guess
-         (font . "JetBrains Mono"))
+         (font . "JetBrains Mono")
+         (background-color . "#1d1f21"))
        default-frame-alist))
 
 ;; Other visual candy
 (set-face-attribute 'default nil :height 130)
-(setq no-blinking-cursor t)
+(setq menu-bar-mode nil
+      tab-bar-mode nil
+      tool-bar-mode nil
+      no-blinking-cursor t)
 
 ;; Use all the space allocated by the window manager
 (setq-default frame-resize-pixelwise t
               frame-inhibit-implied-resize t)
 
-#+end_src
-
-*** Other optimizations
-
-#+begin_src emacs-lisp
-;; Disable loading resources via X (that's what this file is for)
-(advice-add #'x-apply-session-resources :override #'ignore)
-
-;; Disable VC (real men use Magit)
-(setq vc-handled-backends nil
-      vc-follow-symlinks t)
-
-;; Disable package.el
-(setq package-enable-at-startup nil)
-
-;; Try loading the theme before showing the first frame to avoid flicker
-(defvar vs/--loaded-theme nil)
-(when (load (expand-file-name
-             (concat "straight/repos/"
-                     "color-theme-sanityinc-tomorrow/"
-                     "color-theme-sanityinc-tomorrow.el")
-             user-emacs-directory)
-            t)
-  (setq vs/--loaded-theme
-        (load-theme 'sanityinc-tomorrow-night t)))
 #+end_src
 
 #+begin_src emacs-lisp
