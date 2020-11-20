@@ -263,17 +263,15 @@ characters shown on screen, not the window size.
        '((vertical-scroll-bars . nil)
          (horizontal-scroll-bars . nil)
          (font . "JetBrains Mono")
-         (background-color . "#1d1f21"))
+         (background-color . "#1d1f21")) ;(ref:frame-bg)
        default-frame-alist))
 
-;; Other visual candy
 (set-face-attribute 'default nil :height 130)
 (setq menu-bar-mode nil
       tab-bar-mode nil
       tool-bar-mode nil
       no-blinking-cursor t)
 
-;; Use all the space allocated by the window manager
 (setq-default frame-resize-pixelwise t
               frame-inhibit-implied-resize t)
 
@@ -400,7 +398,7 @@ prompts.
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
-I do love myself some dark theme. I go with [[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow night]].
+I do love myself some dark theme. I go with [[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow night]]. Reminder: when changing a theme, we should change the initial background color of frames in [[(frame-bg)][frame parameters]].
 
 #+begin_src emacs-lisp
 (vs/use-package color-theme-sanityinc-tomorrow
