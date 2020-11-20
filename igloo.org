@@ -230,32 +230,9 @@ and then disable them later.
 
 First of all, we set the default parameters of new frames. Since early
 init is done so early, they also apply to the first created frame. We
-hide all the scrollbars and set the default font and background color.
-
-We set the font because it doesn't make sense to let Emacs load a font
-that's going to get replaced later. Depending on the font you choose,
-it might be necessary to change the default height, which is counted
-in 0.1pt.
-
-The background color is hardcoded and you should set it to the same
-background color as your main theme. It's set here because we want to
-avoid another color flashing the frame before the theme is loaded.
-
-We could also set the =menu-bar-lines= and =tool-bar-lines= variables to nil to
-disable the menu bar and tool bar. Instead, we disable them by
-settings the variables =menu-bar-mode= and =tool-bar-mode=. The effect is
-the same, because the modes work by setting the frame parameters, but
-also Emacs doesn't think those mode are enabled when they aren't.
+hide all the scrollbars, menu bars and tool bars and set the default font and background color.
 
 We also disable the blinking cursor, because who came up with that?
-
-Furthermore, =frame-resize-pixelwise= makes Emacs not align the window
-size to character size. This is useful, because otherwise Emacs might
-not play along with tiling window managers.
-=frame-inhibit-implied-resize= set to t disables implicit resizing of
-the frame by for example enabling the toolbar, the scrollbar or
-changing fonts. The default setting is to preserve the number of
-characters shown on screen, not the window size.
 
 #+begin_src emacs-lisp
 (setq default-frame-alist
@@ -271,10 +248,42 @@ characters shown on screen, not the window size.
       tab-bar-mode nil
       tool-bar-mode nil
       no-blinking-cursor t)
+#+end_src
 
+We set the font because it doesn't make sense to let Emacs load a font
+that's going to get replaced later. Depending on the font you choose,
+it might be necessary to change the default height, which is counted
+in 0.1pt.
+
+The background color is hardcoded and you should set it to the same
+background color as your main theme. It's set here because we want to
+avoid another color flashing the frame before the theme is loaded.
+
+We could also set the =menu-bar-lines= and =tool-bar-lines= frame
+parameters to 0 to disable the menu bar and tool bar. Instead, we
+disable them by settings the variables =menu-bar-mode= and
+=tool-bar-mode=. The effect is the same, because the modes work by
+setting the frame parameters, but also Emacs doesn't think those mode
+are enabled when they aren't.
+
+Furthermore, =frame-resize-pixelwise= makes Emacs not align the window
+size to character size. This is useful, because otherwise Emacs might
+not play along with tiling window managers.
+=frame-inhibit-implied-resize= set to t disables implicit resizing of
+the frame by for example enabling the toolbar, the scrollbar or
+changing fonts. The default setting is to preserve the number of
+characters shown on screen, not the window size.
+
+We also tell Emacs that we don't want to compact font caches. This
+might cause the memory usage to grow, especially if we were using a
+lot of fonts (which we don't), but the GC and redisplay can be a
+little faster (since GC doesn't compact font caches and redisplay
+doesn't have to reopen them again).
+
+#+begin_src emacs-lisp
 (setq-default frame-resize-pixelwise t
-              frame-inhibit-implied-resize t)
-
+              frame-inhibit-implied-resize t
+              inhibit-compacting-font-caches t)
 #+end_src
 
 #+begin_src emacs-lisp
