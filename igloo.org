@@ -7,7 +7,7 @@
 #+begin_quote
 /History is scraps of evidence joined by the glue of imagination/
 #+end_quote
-​- First image on duckduckgo for the query "famous glue quote"
+​- First image on DuckDuckGo for the query "famous glue quote"
 
 This repo is my literate Emacs configuration. If you are unfamiliar with what literate programming is, basically every code snippet in this file gets yoinked out and put into the =init.el= file, which then serves as an init script for Emacs. Writing the configuration in an org file allows for (in my opinion) better documentation and organization.
 
@@ -37,7 +37,7 @@ Here's a cherry-picked list of some of the packages I use:
 
 ** Dependencies
 - [[https://www.gnu.org/software/make/][GNU Make]]
-- [[https://www.gnu.org/software/emacs/][GNU Emacs]] (only tested with versions 27+)
+- [[https://www.gnu.org/software/emacs/][GNU Emacs]] (only tested with versions 28+)
 
 * Process
 
@@ -60,19 +60,19 @@ these days).
 
 This configuration is built on the simple principle of "do what you
 can at compile time". This means that we have to properly
-differentiate what happens at comptime (via `eval-when-compile`), what
+differentiate what happens at comptime (via =eval-when-compile=), what
 happens at runtime (via plain forms) and what happens during both (via
-`eval-and-compile`).
+=eval-and-compile=).
 
 To look up if we are executing in compilation or not, we set a variable to true only during compilation:
 
 #+begin_src emacs-lisp
 (eval-and-compile
-  (defvar vs/--compiling nil
+  (defvar igloo--compiling nil
     "Non-nill if read when compiling."))
 
 (eval-when-compile
-  (setq vs/--compiling t))
+  (setq igloo--compiling t))
 #+end_src
 
 First, the package manager is installed and configured at compile
@@ -88,7 +88,7 @@ form with.
 
 #+begin_src emacs-lisp
 (eval-when-compile
-  (defmacro vs/use-package (&rest body)
+  (defmacro igloo-use-package (&rest body)
     "Passes BODY to `use-package' and call it at comptime and runtime."
     (declare (indent defun))
     `(eval-and-compile
@@ -166,32 +166,32 @@ Starting up is where a lot of garbage can be created, so it's easiest to pretty 
 Furthermore, when enabling garbage collection, do so in a deferred manner, that is run it only after a second passes since the task (minibuffer action, completion) ends. This way, the thing running just after will still be free of garbage collection.
 
 #+begin_src emacs-lisp
-(defconst vs/--gc-threshold (* 100 1024 1024))
+(defconst igloo--gc-threshold (* 100 1024 1024))
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6
       read-process-output-max (* 1024 1024))
 
-(defun vs/--startup-cleanup ()
+(defun igloo--startup-cleanup ()
   "Reset settings disabled for faster startup."
-  (setq gc-cons-threshold vs/--gc-threshold
+  (setq gc-cons-threshold igloo--gc-threshold
         gc-cons-percentage 0.1))
-(add-hook 'emacs-startup-hook #'vs/--startup-cleanup)
+(add-hook 'emacs-startup-hook #'igloo--startup-cleanup)
 
 
-(defun vs/--gc-disable (&rest _)
+(defun igloo--gc-disable (&rest _)
   "Disable garbage collection."
   (setq gc-cons-threshold most-positive-fixnum))
-(add-hook 'minibuffer-setup-hook #'vs/--gc-disable)
-(add-hook 'company-completion-started-hook #'vs/--gc-disable)
+(add-hook 'minibuffer-setup-hook #'igloo--gc-disable)
+(add-hook 'company-completion-started-hook #'igloo--gc-disable)
 
-(defun vs/--gc-enable ()
+(defun igloo--gc-enable ()
   "Enable garbage collection."
-  (setq gc-cons-threshold vs/--gc-threshold))
-(defun vs/--defer-gc-enable (&rest _)
+  (setq gc-cons-threshold igloo--gc-threshold))
+(defun igloo--defer-gc-enable (&rest _)
   "Enable garbage collection, defered."
-  (run-at-time 1 nil #'vs/--gc-enable))
-(add-hook 'minibuffer-exit-hook #'vs/--defer-gc-enable)
-(add-hook 'company-completion-finished-hook #'vs/--defer-gc-enable)
+  (run-at-time 1 nil #'igloo--gc-enable))
+(add-hook 'minibuffer-exit-hook #'igloo--defer-gc-enable)
+(add-hook 'company-completion-finished-hook #'igloo--defer-gc-enable)
 
 #+end_src
 
@@ -201,7 +201,7 @@ We can make more optimizations by telling Emacs not to do stuff we
 manage ourselves.
 
 For starters, the look and feel (things like non-blinking cursor, menu
-bar, font, ...) is configured in this file, not via X resources, so
+bar, font, ...) are configured in this file, not via X resources, so
 throw the loading of those resources out of the equation.
 
 We also don't use the =vc= framework for controlling various version
@@ -255,9 +255,10 @@ that's going to get replaced later. Depending on the font you choose,
 it might be necessary to change the default height, which is counted
 in 0.1pt.
 
-The background color is hardcoded and you should set it to the same
-background color as your main theme. It's set here because we want to
-avoid another color flashing the frame before the theme is loaded.
+The background color is hardcoded and you should set
+it to the same background color as your main theme. It's set here
+because we want to avoid another color flashing the frame before the
+theme is loaded[fn:1].
 
 We could also set the =menu-bar-lines= and =tool-bar-lines= frame
 parameters to 0 to disable the menu bar and tool bar. Instead, we
@@ -361,7 +362,7 @@ hasn't been defined when loading =use-package=.
 
 #+begin_src emacs-lisp
 (eval-and-compile
-  (load vs/straight-bootstrap)
+  (load igloo-straight-bootstrap)
   (require 'straight)
   (straight-use-package 'use-package)
 
@@ -410,7 +411,7 @@ prompts.
 I do love myself some dark theme. I go with [[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow night]]. Reminder: when changing a theme, we should change the initial background color of frames in [[(frame-bg)][frame parameters]].
 
 #+begin_src emacs-lisp
-(vs/use-package color-theme-sanityinc-tomorrow
+(igloo-use-package color-theme-sanityinc-tomorrow
   :straight t
   :demand
   :config
@@ -448,8 +449,11 @@ I need any more, keeping it here for reference (not tangled):
 
 * Development
 
-
 #+begin_src emacs-lisp
 (provide 'init)
 ;;; init.el ends here
 #+end_src
+
+* Footnotes
+
+[fn:1] TODO: This might be solved by somehow figuring out the color at comptime 
