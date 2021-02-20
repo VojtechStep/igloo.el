@@ -774,6 +774,23 @@ than the surrounding text."
   <<setup-ligatures>>
   (igloo-scaled-cjk-chars))
 #+end_src
+
+*** Modeline
+
+This one is pretty easy - I extracted my modeline configuration to
+[[https://github.com/VojtechStep/vs-modeline.el][a separate repo]], so
+it's enough to just download it.
+
+#+begin_src emacs-lisp
+(igloo-use-package vs-modeline
+  :straight (vs-modeline :type git
+                         :host github
+                         :repo "VojtechStep/vs-modeline.el"
+                         :local-repo "~/Code/VojtechStep/Projects/vs-modeline.el")
+  :demand t
+  :config
+  (vs-modeline-mode))
+#+end_src
 ** Execution environment
 
 I struggled a little with figuring out how to keep the environment
