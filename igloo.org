@@ -61,6 +61,8 @@ these days).
 (eval-when-compile (require 'cl-macs))
 #+end_src
 
+** Philosophy
+
 This configuration is built on the simple principle of "do what you
 can at compile time". This means that we have to properly
 differentiate what happens at comptime (via =eval-when-compile=), what
@@ -480,6 +482,17 @@ hasn't been defined when loading =use-package=.
 
 Now that the package manager is loaded, start configuring packages.
 
+*** TODO Managing globally installed packages
+
+I still haven't figured out how to make straight cooperate
+properly with local non-vcs directories. For example, mu4e and mozc
+require other system components, like native binaries, to be built, so
+they are often included in the distro's package manager. It would be
+nice if one didn't have to have two copies of the repo on the disk -
+one from the system package manager and one from straight. I use
+=:load-path= for those packages for now, but I loose on the nice
+automatic builds and such.
+
 ** UI/UX
 
 *** Behaviour
@@ -791,6 +804,33 @@ it's enough to just download it.
   :config
   (vs-modeline-mode))
 #+end_src
+
+** Input
+
+I'm learning Japanese, so sometimes I need to input Japanese text. I tried [[https://github.com/skk-dev/ddskk][ddskk]] for a while, but I found the input method unintuitive, and the documentation is in Japanese, so I switched to [[https://github.com/google/mozc][mozc]], which is the open source version of Google Japanese Input.
+
+One needs to install the mozc server and Emacs helper independently of
+the extension. I use a customized version of
+[[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]],
+which builds the server, the Emacs helper, copies the mozc.el package
+to =/usr/share/emacs/site-lisp/mozc.el=, and doesn't depend on Qt.
+
+Since the package isn't managed with straight (see [[*Managing globally installed packages][Managing globally installed packages]]), we don't get the autoloads from the package, so let's just require it whenever the input method is about to be changed to "japanese-mozc".
+
+#+begin_src emacs-lisp
+(use-package mozc
+  :load-path "/usr/share/emacs/site-lisp/"
+  :custom
+  (mozc-candidate-style 'echo-area)
+  (default-input-method "japanese-mozc")
+  (mozc-leim-title "Aあ")
+  :init
+  (defun vs/--input-method-maybe-require-mozc (method)
+    (when (string-equal method "japanese-mozc")
+      (require 'mozc)))
+  (advice-add 'activate-input-method :before #'vs/--input-method-maybe-require-mozc))
+#+end_src
+
 ** Execution environment
 
 I struggled a little with figuring out how to keep the environment
