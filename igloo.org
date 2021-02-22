@@ -401,9 +401,10 @@ to clone repositories. Those need to be =defvar='s, because neither
 straight or use-package have been loaded at this point.
 
 #+begin_src emacs-lisp
-(defvar straight-repository-branch "develop")
-(defvar straight-vc-git-default-protocol 'ssh)
-(defvar straight-vc-git-default-clone-depth 1)
+(eval-and-compile
+  (defvar straight-repository-branch "develop")
+  (defvar straight-vc-git-default-protocol 'ssh)
+  (defvar straight-vc-git-default-clone-depth 1))
 #+end_src
 
 Straight can also automatically recompile packages if one chooses to
@@ -432,10 +433,23 @@ The =use-package-verbose= is useful when you want to diagnose a
 problem with package loading - for example to see which packages take
 a long time to load, or when are packages loaded and configured.
 
+We instruct use-package to not emit error handling code when expanding
+macros. They are unnecessary when one knows their config works, which
+is the case here, and it helps with debugging macro-expanded code. ~It
+also allows the byte-compiler to properly process the =:functions=
+block of use-package~ Apparently, when byte-compiling, use-package
+still emits some comptime-only error checking code that trips up the
+byte compiler, so the =:functions= clause doesn't really work as
+intended, and it is still necessary to add =declare-function='s to the
+=:preface=.
+
 #+begin_src emacs-lisp
-(defvar use-package-compute-statistics t)
-(defvar use-package-always-defer t)
-(defvar use-package-verbose nil)
+(eval-and-compile
+  (defvar use-package-compute-statistics t)
+  (defvar use-package-always-defer t)
+  (defvar use-package-verbose nil)
+  (defvar use-package-expand-minimally t)
+  (defvar use-package-use-theme nil))
 #+end_src
 
 The bootstrap file location has to be accessible at both comptime and
@@ -807,28 +821,44 @@ it's enough to just download it.
 
 ** Input
 
-I'm learning Japanese, so sometimes I need to input Japanese text. I tried [[https://github.com/skk-dev/ddskk][ddskk]] for a while, but I found the input method unintuitive, and the documentation is in Japanese, so I switched to [[https://github.com/google/mozc][mozc]], which is the open source version of Google Japanese Input.
+I'm learning Japanese, so sometimes I need to input Japanese text. I
+tried [[https://github.com/skk-dev/ddskk][ddskk]] for a while, but I
+found the input method unintuitive, and the documentation is in
+Japanese, so I switched to [[https://github.com/google/mozc][mozc]],
+which is the open source version of Google Japanese Input.
 
 One needs to install the mozc server and Emacs helper independently of
 the extension. I use a customized version of
 [[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]],
 which builds the server, the Emacs helper, copies the mozc.el package
-to =/usr/share/emacs/site-lisp/mozc.el=, and doesn't depend on Qt.
+to =/usr/share/emacs/site-lisp/mozc/mozc.el=, byte compiles it, and
+doesn't depend on Qt.
 
-Since the package isn't managed with straight (see [[*Managing globally installed packages][Managing globally installed packages]]), we don't get the autoloads from the package, so let's just require it whenever the input method is about to be changed to "japanese-mozc".
+Since the package isn't managed with straight (see [[*Managing
+globally installed packages][Managing globally installed packages]]),
+we don't get the autoloads from the package, so let's just require it
+whenever the input method is about to be changed to "japanese-mozc".
 
 #+begin_src emacs-lisp
-(use-package mozc
-  :load-path "/usr/share/emacs/site-lisp/"
+(igloo-use-package mozc
+  :load-path "/usr/share/emacs/site-lisp/mozc"
   :custom
   (mozc-candidate-style 'echo-area)
   (default-input-method "japanese-mozc")
   (mozc-leim-title "Aあ")
-  :init
+  :preface
+  (declare-function mozc-mode "mozc")
+  (declare-function find-library-name "find-func")
   (defun vs/--input-method-maybe-require-mozc (method)
     (when (string-equal method "japanese-mozc")
       (require 'mozc)))
-  (advice-add 'activate-input-method :before #'vs/--input-method-maybe-require-mozc))
+  :init
+  (advice-add 'activate-input-method :before #'vs/--input-method-maybe-require-mozc)
+  :config
+  (when (and (fboundp 'native-compile-async)
+             (not (subr-native-elisp-p (symbol-function #'mozc-mode))))
+    (require 'find-func)
+    (native-compile-async (find-library-name "mozc") nil t)))
 #+end_src
 
 ** Execution environment
