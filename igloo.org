@@ -651,6 +651,8 @@ This one is pretty easy - I extracted my modeline configuration to [[https://git
 
 ** Input
 
+*** Japanese
+
 I'm learning Japanese, so sometimes I need to input Japanese text. I tried [[https://github.com/skk-dev/ddskk][ddskk]] for a while, but I found the input method unintuitive, and the documentation is in Japanese, so I switched to [[https://github.com/google/mozc][mozc]], which is the open source version of Google Japanese Input.
 
 One needs to install the mozc server and Emacs helper independently of the extension. I use a customized version of [[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]], which builds the server, the Emacs helper, copies the mozc.el package to =/usr/share/emacs/site-lisp/mozc/mozc.el=, byte compiles it, and doesn't depend on Qt.
@@ -677,6 +679,14 @@ Since the package isn't managed with straight (see [[*Managing globally installe
              (not (subr-native-elisp-p (symbol-function #'mozc-mode))))
     (require 'find-func)
     (native-compile-async (find-library-name "mozc") nil t)))
+#+end_src
+
+*** Spell checking
+
+I use the builtin flyspell package with [[http://aspell.net/][aspell]]. There is not a lot of customization going on, since the out-of-the-box config works well enough, but I still haven't figured out how to prevent it from putting its files into =~=, even with =ispell-cmd-args=.
+
+#+begin_src emacs-lisp
+(use-package ispell)
 #+end_src
 
 ** Execution environment
