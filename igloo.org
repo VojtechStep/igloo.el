@@ -42,9 +42,7 @@ Here's a cherry-picked list of some of the packages I use:
 
 * Process
 
-First thing in the file is going to be the file header. It's useful to
-add a little description and enable lexical binding (it's all the rage
-these days).
+First thing in the file is going to be the file header. It's useful to add a little description and enable lexical binding (it's all the rage these days).
 
 #+begin_src emacs-lisp
 ;;; Igloo --- The glue connecting my whole operating experience. YMMV -*- lexical-binding: t; -*-
@@ -63,14 +61,9 @@ these days).
 
 ** Philosophy
 
-This configuration is built on the simple principle of "do what you
-can at compile time". This means that we have to properly
-differentiate what happens at comptime (via =eval-when-compile=), what
-happens at runtime (via plain forms) and what happens during both (via
-=eval-and-compile=).
+This configuration is built on the simple principle of "do what you can at compile time". This means that we have to properly differentiate what happens at comptime (via =eval-when-compile=), what happens at runtime (via plain forms) and what happens during both (via =eval-and-compile=).
 
-To look up if we are executing in compilation or not, we set a
-variable to true only during compilation:
+To look up if we are executing in compilation or not, we set a variable to true only during compilation:
 
 #+begin_src emacs-lisp
 (eval-and-compile
@@ -81,16 +74,11 @@ variable to true only during compilation:
   (setq igloo--compiling t))
 #+end_src
 
-First, the package manager is installed and configured at compile
-time. At runtime, we only load it via its entry point, the bootstrap
-file.
+First, the package manager is installed and configured at compile time. At runtime, we only load it via its entry point, the bootstrap file.
 
-The =use-package= clauses need to be evaluated at both comptime, to
-clone and build the packages, and at runtime to expose them to the
-system.
+The =use-package= clauses need to be evaluated at both comptime, to clone and build the packages, and at runtime to expose them to the system.
 
-For this reason, we define a macro to substitute the =(use-package
-...)= form with.
+For this reason, we define a macro to substitute the =(use-package ...)= form with.
 
 #+begin_src emacs-lisp
 (eval-when-compile
@@ -103,15 +91,9 @@ For this reason, we define a macro to substitute the =(use-package
 
 ** Display
 
-Emacs is generally weird with its rendering pipeline, and that's a can
-of worms I don't want to get into here. One big observable quirk it
-has is that when running in server mode, it does not initialize some
-variables relating to faces and such.
+Emacs is generally weird with its rendering pipeline, and that's a can of worms I don't want to get into here. One big observable quirk it has is that when running in server mode, it does not initialize some variables relating to faces and such.
 
-To interact with faces and fonts, one has to wait until at least the
-first frame is made, which is what this macro is for. It is also
-intelligent enough to recognize when no server is running, and in that
-case it executes the body immediately.
+To interact with faces and fonts, one has to wait until at least the first frame is made, which is what this macro is for. It is also intelligent enough to recognize when no server is running, and in that case it executes the body immediately.
 
 The macro is only available during compilation.
 
@@ -150,17 +132,11 @@ as a normal Emacs process, run BODY straight away."
 :header-args: :tangle early-init.el
 :END:
 
-Emacs 27 added =early-init.el=, which is a file that gets loaded very
-early in the process (hence the name).
+Emacs 27 added =early-init.el=, which is a file that gets loaded very early in the process (hence the name).
 
-A word of warning: the documentation states that =early-init.el=
-should be used for "customizing how the package system is initialized"
-and "customizations [...] that need to be set up before initializing",
-because "the early init file is read too early into the startup
-process".
+A word of warning: the documentation states that =early-init.el= should be used for "customizing how the package system is initialized" and "customizations [...] that need to be set up before initializing", because "the early init file is read too early into the startup process".
 
-From
-[[https://git.savannah.gnu.org/cgit/emacs.git/tree/etc/NEWS.27#n206][etc/NEWS.27]]:
+From [[https://git.savannah.gnu.org/cgit/emacs.git/tree/etc/NEWS.27#n206][etc/NEWS.27]]:
 
 #+begin_example
 ,** Emacs can now be configured using an early init file.
@@ -180,8 +156,7 @@ make some customization fail to work.
 
 #+end_example
 
-I try not to abuse the early init system, but I do some UI stuff that
-makes sense to me.
+I try not to abuse the early init system, but I do some UI stuff that makes sense to me.
 
 As a good citizen, we start this file with a header.
 
@@ -201,41 +176,19 @@ As a good citizen, we start this file with a header.
 
 *** Startup Optimizations
 
-Many of the startup optimizations were inspired by
-[[https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#how-does-doom-start-up-so-quickly][how
-Doom does it]]. I recommend reading it, since not all the tricks are
-used here, only the ones that noticeably improved the loading times
-for me.
+Many of the startup optimizations were inspired by [[https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#how-does-doom-start-up-so-quickly][how Doom does it]]. I recommend reading it, since not all the tricks are used here, only the ones that noticeably improved the loading times for me.
 
-In order to reduce the startup time of Emacs, we can employ several
-techniques. The most important part is deferred package loading, to
-which we will get in [[*Package management][Package management]].
+In order to reduce the startup time of Emacs, we can employ several techniques. The most important part is deferred package loading, to which we will get in [[*Package management][Package management]].
 
 **** GC Optimization
 
-Other than that, we can start by looking into the garbage collector.
-The garbage collector runs when there is garbage to be picked up, that
-is when objects on the heap are being abandoned. We can influence when
-the garbage collection runs. If we wanted to have a lower memory
-footprint, we would want GC to run more frequently. However, in this
-case, we can live with a little memory spike if it provides us with a
-snappier experience.
+Other than that, we can start by looking into the garbage collector. The garbage collector runs when there is garbage to be picked up, that is when objects on the heap are being abandoned. We can influence when the garbage collection runs. If we wanted to have a lower memory footprint, we would want GC to run more frequently. However, in this case, we can live with a little memory spike if it provides us with a snappier experience.
 
-Emacs garbage collector can run once the amount of allocated memory
-since the last GC run reaches a certain threshold, which is 8MB by
-default. This number is ridiculously small for most, so we increase it
-to about 100 megs.
+Emacs garbage collector can run once the amount of allocated memory since the last GC run reaches a certain threshold, which is 8MB by default. This number is ridiculously small for most, so we increase it to about 100 megs.
 
-Starting up is where a lot of garbage can be created, so it's easiest
-to pretty much disable garbage collection as soon as possible in the
-initialization, and re-enable it after Emacs starts. Another
-small-object sensitive workflows are minibuffer operations and company
-completion, so disable GC during those two too.
+Starting up is where a lot of garbage can be created, so it's easiest to pretty much disable garbage collection as soon as possible in the initialization, and re-enable it after Emacs starts. Another small-object sensitive workflows are minibuffer operations and company completion, so disable GC during those two too.
 
-Furthermore, when enabling garbage collection, do so in a deferred
-manner, that is run it only after a second passes since the task
-(minibuffer action, completion) ends. This way, the thing running just
-after will still be free of garbage collection.
+Furthermore, when enabling garbage collection, do so in a deferred manner, that is run it only after a second passes since the task (minibuffer action, completion) ends. This way, the thing running just after will still be free of garbage collection.
 
 #+begin_src emacs-lisp
 (defconst igloo--gc-threshold (* 100 1024 1024))
@@ -269,20 +222,13 @@ after will still be free of garbage collection.
 
 **** Other optimizations
 
-We can make more optimizations by telling Emacs not to do stuff we
-manage ourselves.
+We can make more optimizations by telling Emacs not to do stuff we manage ourselves.
 
-For starters, the look and feel (things like non-blinking cursor, menu
-bar, font, ...) are configured in this file, not via X resources, so
-throw the loading of those resources out of the equation.
+For starters, the look and feel (things like non-blinking cursor, menu bar, font, ...) are configured in this file, not via X resources, so throw the loading of those resources out of the equation.
 
-We also don't use the =vc= framework for controlling various version
-control systems, so pretend it doesn't exist by never enabling it,
-ever (from docs: "An empty list disables VC altogether").
+We also don't use the =vc= framework for controlling various version control systems, so pretend it doesn't exist by never enabling it, ever (from docs: "An empty list disables VC altogether").
 
-Another important feature we throw out the window is Emacs builtin
-package management. It would otherwise initialize itself during
-startup, and that's just not groovy.
+Another important feature we throw out the window is Emacs builtin package management. It would otherwise initialize itself during startup, and that's just not groovy.
 
 #+begin_src emacs-lisp
 (advice-add #'x-apply-session-resources :override #'ignore)
@@ -292,16 +238,14 @@ startup, and that's just not groovy.
 (setq package-enable-at-startup nil)
 #+end_src
 
-Emacs has support for bidirectional text, which I don't have a use
-case for, and disabling it can improve redisplay performance.
+Emacs has support for bidirectional text, which I don't have a use case for, and disabling it can improve redisplay performance.
 
 #+begin_src emacs-lisp
 (setq bidi-inhibit-bpa t)
 (setq-default bidi-paragraph-direction 'left-to-right)
 #+end_src
 
-Stuff from my previous early-init I either didn't understand or don't
-think I need any more, keeping it here for reference (not tangled):
+Stuff from my previous early-init I either didn't understand or don't think I need any more, keeping it here for reference (not tangled):
 
 #+begin_src emacs-lisp :tangle no
 ;; This was in early-init, supposed to help with startup, maybe try and bench it
@@ -319,16 +263,9 @@ think I need any more, keeping it here for reference (not tangled):
 
 *** Early visual stuff
 
-As mentioned, the GNU developers warn against using early init for
-graphical stuff. In this section, we are using early init for
-graphical stuff. Most of the settings are here to prevent their
-initialization, because it would just be wasteful to initialize them
-and then disable them later.
+As mentioned, the GNU developers warn against using early init for graphical stuff. In this section, we are using early init for graphical stuff. Most of the settings are here to prevent their initialization, because it would just be wasteful to initialize them and then disable them later.
 
-First of all, we set the default parameters of new frames. Since early
-init is done so early, they also apply to the first created frame. We
-hide all the scrollbars, menu bars and tool bars and set the default
-font and background color.
+First of all, we set the default parameters of new frames. Since early init is done so early, they also apply to the first created frame. We hide all the scrollbars, menu bars and tool bars and set the default font and background color.
 
 We also disable the blinking cursor, because who came up with that?
 
@@ -348,36 +285,15 @@ We also disable the blinking cursor, because who came up with that?
       no-blinking-cursor t)
 #+end_src
 
-We set the font because it doesn't make sense to let Emacs load a font
-that's going to get replaced later. Depending on the font you choose,
-it might be necessary to change the default height, which is counted
-in 0.1pt.
+We set the font because it doesn't make sense to let Emacs load a font that's going to get replaced later. Depending on the font you choose, it might be necessary to change the default height, which is counted in 0.1pt.
 
-The background color is hardcoded and you should set it to the same
-background color as your main theme. It's set here because we want to
-avoid another color flashing the frame before the theme is
-loaded[fn:1].
+The background color is hardcoded and you should set it to the same background color as your main theme. It's set here because we want to avoid another color flashing the frame before the theme is loaded[fn:1].
 
-We could also set the =menu-bar-lines= and =tool-bar-lines= frame
-parameters to 0 to disable the menu bar and tool bar. Instead, we
-disable them by settings the variables =menu-bar-mode= and
-=tool-bar-mode=. The effect is the same, because the modes work by
-setting the frame parameters, but also Emacs doesn't think those mode
-are enabled when they aren't.
+We could also set the =menu-bar-lines= and =tool-bar-lines= frame parameters to 0 to disable the menu bar and tool bar. Instead, we disable them by settings the variables =menu-bar-mode= and =tool-bar-mode=. The effect is the same, because the modes work by setting the frame parameters, but also Emacs doesn't think those mode are enabled when they aren't.
 
-Furthermore, =frame-resize-pixelwise= makes Emacs not align the window
-size to character size. This is useful, because otherwise Emacs might
-not play along with tiling window managers.
-=frame-inhibit-implied-resize= set to t disables implicit resizing of
-the frame by for example enabling the toolbar, the scrollbar or
-changing fonts. The default setting is to preserve the number of
-characters shown on screen, not the window size.
+Furthermore, =frame-resize-pixelwise= makes Emacs not align the window size to character size. This is useful, because otherwise Emacs might not play along with tiling window managers. =frame-inhibit-implied-resize= set to t disables implicit resizing of the frame by for example enabling the toolbar, the scrollbar or changing fonts. The default setting is to preserve the number of characters shown on screen, not the window size.
 
-We also tell Emacs that we don't want to compact font caches. This
-might cause the memory usage to grow, especially if we were using a
-lot of fonts (which we don't), but the GC and redisplay can be a
-little faster (since GC doesn't compact font caches and redisplay
-doesn't have to reopen them again).
+We also tell Emacs that we don't want to compact font caches. This might cause the memory usage to grow, especially if we were using a lot of fonts (which we don't), but the GC and redisplay can be a little faster (since GC doesn't compact font caches and redisplay doesn't have to reopen them again).
 
 #+begin_src emacs-lisp
 (setq-default frame-resize-pixelwise t
@@ -392,13 +308,9 @@ doesn't have to reopen them again).
 
 ** Package management
 
-First, to be able to install packages, bootstrap
-[[https://github.com/raxod502/straight.el][straight.el]] and
-[[https://github.com/jwiegley/use-package][use-package]].
+First, to be able to install packages, bootstrap [[https://github.com/raxod502/straight.el][straight.el]] and [[https://github.com/jwiegley/use-package][use-package]].
 
-Configure straight to run on the bleeding edge and use ssh by default
-to clone repositories. Those need to be =defvar='s, because neither
-straight or use-package have been loaded at this point.
+Configure straight to run on the bleeding edge and use ssh by default to clone repositories. Those need to be =defvar='s, because neither straight or use-package have been loaded at this point.
 
 #+begin_src emacs-lisp
 (eval-and-compile
@@ -407,41 +319,19 @@ straight or use-package have been loaded at this point.
   (defvar straight-vc-git-default-clone-depth 1))
 #+end_src
 
-Straight can also automatically recompile packages if one chooses to
-edit the locally checked-out sources. By default, it checks at startup
-if the source files were changed, which can hurt startup performance.
-Change it to only check for edits when a file is saved, and when
-explicitly checking with =straight-check-package= or
-=straight-check-all=.
+Straight can also automatically recompile packages if one chooses to edit the locally checked-out sources. By default, it checks at startup if the source files were changed, which can hurt startup performance. Change it to only check for edits when a file is saved, and when explicitly checking with =straight-check-package= or =straight-check-all=.
 
 #+begin_src emacs-lisp
 (defvar straight-check-for-modifications '(find-when-checking check-on-save))
 #+end_src
 
-Also, configure use-package to defer by default (without having to
-specify =:defer t=) and capture statistics (which can be shown by
-calling =use-package-report=). Verbosity is useful for debugging, but
-generally not necessary.
+Also, configure use-package to defer by default (without having to specify =:defer t=) and capture statistics (which can be shown by calling =use-package-report=). Verbosity is useful for debugging, but generally not necessary.
 
-Deferring package loading is useful to improve startup time, because
-it means that the packages themselves aren't loaded and initialized on
-startup, only their autoloads are (autoloads are a mechanism for a
-file to export functions that trigger a loading of the file they are
-defined in when called).
+Deferring package loading is useful to improve startup time, because it means that the packages themselves aren't loaded and initialized on startup, only their autoloads are (autoloads are a mechanism for a file to export functions that trigger a loading of the file they are defined in when called).
 
-The =use-package-verbose= is useful when you want to diagnose a
-problem with package loading - for example to see which packages take
-a long time to load, or when are packages loaded and configured.
+The =use-package-verbose= is useful when you want to diagnose a problem with package loading - for example to see which packages take a long time to load, or when are packages loaded and configured.
 
-We instruct use-package to not emit error handling code when expanding
-macros. They are unnecessary when one knows their config works, which
-is the case here, and it helps with debugging macro-expanded code. ~It
-also allows the byte-compiler to properly process the =:functions=
-block of use-package~ Apparently, when byte-compiling, use-package
-still emits some comptime-only error checking code that trips up the
-byte compiler, so the =:functions= clause doesn't really work as
-intended, and it is still necessary to add =declare-function='s to the
-=:preface=.
+We instruct use-package to not emit error handling code when expanding macros. They are unnecessary when one knows their config works, which is the case here, and it helps with debugging macro-expanded code. ~It also allows the byte-compiler to properly process the =:functions= block of use-package~ Apparently, when byte-compiling, use-package still emits some comptime-only error checking code that trips up the byte compiler, so the =:functions= clause doesn't really work as intended, and it is still necessary to add =declare-function='s to the =:preface=.
 
 #+begin_src emacs-lisp
 (eval-and-compile
@@ -452,8 +342,7 @@ intended, and it is still necessary to add =declare-function='s to the
   (defvar use-package-use-theme nil))
 #+end_src
 
-The bootstrap file location has to be accessible at both comptime and
-runtime.
+The bootstrap file location has to be accessible at both comptime and runtime.
 
 #+begin_src emacs-lisp
 (eval-and-compile
@@ -461,9 +350,7 @@ runtime.
     (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory)))
 #+end_src
 
-Install the package manager if it can't be found. This only happens at
-compile time. At runtime, it is assumed that the package manager, and
-all other packages for that matter, are installed.
+Install the package manager if it can't be found. This only happens at compile time. At runtime, it is assumed that the package manager, and all other packages for that matter, are installed.
 
 #+begin_src emacs-lisp
 (eval-when-compile
@@ -476,13 +363,9 @@ all other packages for that matter, are installed.
       (eval-print-last-sexp))))
 #+end_src
 
-Once the package manager is guaranteed to be present at comptime and
-runtime, load it and setup =use-package=.
+Once the package manager is guaranteed to be present at comptime and runtime, load it and setup =use-package=.
 
-First, download and compile it. Once it's present on the system,
-require it. The call to =straight-use-package-mode= is necessary,
-because it adds keywords to =use-package-keyword=, but the variable
-hasn't been defined when loading =use-package=.
+First, download and compile it. Once it's present on the system, require it. The call to =straight-use-package-mode= is necessary, because it adds keywords to =use-package-keyword=, but the variable hasn't been defined when loading =use-package=.
 
 #+begin_src emacs-lisp
 (eval-and-compile
@@ -498,28 +381,17 @@ Now that the package manager is loaded, start configuring packages.
 
 *** TODO Managing globally installed packages
 
-I still haven't figured out how to make straight cooperate
-properly with local non-vcs directories. For example, mu4e and mozc
-require other system components, like native binaries, to be built, so
-they are often included in the distro's package manager. It would be
-nice if one didn't have to have two copies of the repo on the disk -
-one from the system package manager and one from straight. I use
-=:load-path= for those packages for now, but I loose on the nice
-automatic builds and such.
+I still haven't figured out how to make straight cooperate properly with local non-vcs directories. For example, mu4e and mozc require other system components, like native binaries, to be built, so they are often included in the distro's package manager. It would be nice if one didn't have to have two copies of the repo on the disk - one from the system package manager and one from straight. I use =:load-path= for those packages for now, but I loose on the nice automatic builds and such.
 
 ** UI/UX
 
 *** Behaviour
 
-As for the appearance, I'm not a huge fan of the startup screen, so
-disable it.
+As for the appearance, I'm not a huge fan of the startup screen, so disable it.
 
-I also consider myself a 1337 h4x0r, so don't nag me about
-advanced-level commands.
+I also consider myself a 1337 h4x0r, so don't nag me about advanced-level commands.
 
-I use [[https://github.com/raxod502/selectrum][selectrum]] as a
-completion framework (more on that later), so I don't care much about
-shorter ways I can type in commands.
+I use [[https://github.com/raxod502/selectrum][selectrum]] as a completion framework (more on that later), so I don't care much about shorter ways I can type in commands.
 
 #+begin_src emacs-lisp
 (setq inhibit-startup-screen t
@@ -527,10 +399,7 @@ shorter ways I can type in commands.
       extended-command-suggest-shorter nil)
 #+end_src
 
-This adds VIM-like (read: correct) scrolling behavior: only scroll one
-line at a time, keep a fixed number of visible lines around the cursor
-and /never/ recenter when the cursor goes off screen (honestly, why is
-that even a thing).
+This adds VIM-like (read: correct) scrolling behavior: only scroll one line at a time, keep a fixed number of visible lines around the cursor and /never/ recenter when the cursor goes off screen (honestly, why is that even a thing).
 
 #+begin_src emacs-lisp
 (setq-default scroll-step 1
@@ -538,43 +407,31 @@ that even a thing).
               scroll-conservatively 101)
 #+end_src
 
-There is no yes/no question important enough to require up to three
-key presses more then necessary, so make all yes/no prompts into y/n
-prompts.
+There is no yes/no question important enough to require up to three key presses more then necessary, so make all yes/no prompts into y/n prompts.
 
 #+begin_src emacs-lisp
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
-When an action grows the minibuffer (for example org-drill), I don't
-want it to stay enlarged after the action finishes, which is the
-default behaviour.
+When an action grows the minibuffer (for example org-drill), I don't want it to stay enlarged after the action finishes, which is the default behaviour.
 
 #+begin_src emacs-lisp
 (setq-default resize-mini-windows t)
 #+end_src
 
-I mostly use the keyboard to navigate my system, and it's a little
-frustrating when I have a hidden mouse pointer somewhere on the screen
-and it causes a part of a buffer to be highlighted. Ergo, only apply
-the hover overlay when the mouse is moved.
+I mostly use the keyboard to navigate my system, and it's a little frustrating when I have a hidden mouse pointer somewhere on the screen and it causes a part of a buffer to be highlighted. Ergo, only apply the hover overlay when the mouse is moved.
 
 #+begin_src emacs-lisp
 (setq-default mouse-highlight 1)
 #+end_src
 
-Do you like polluting your working directory with files like
-=.#totaly-a-file.rs=? Yeah, me neither, so disable them pesky
-lockfiles.
+Do you like polluting your working directory with files like =.#totaly-a-file.rs=? Yeah, me neither, so disable them pesky lockfiles.
 
 #+begin_src emacs-lisp
 (setq create-lockfiles nil)
 #+end_src
 
-The fish shell, which I use, is not POSIX compliant, and has a bunch
-of bells and whistles that I don't need when spawning inferior shell
-processes. Therefore, I prefer to use the standard =/bin/sh= as the
-default (which should be symlinked to dash).
+The fish shell, which I use, is not POSIX compliant, and has a bunch of bells and whistles that I don't need when spawning inferior shell processes. Therefore, I prefer to use the standard =/bin/sh= as the default (which should be symlinked to dash).
 
 #+begin_src emacs-lisp
 (setq shell-file-name "/bin/sh") ;(ref:default-shell)
@@ -582,10 +439,7 @@ default (which should be symlinked to dash).
 
 *** Color theme
 
-I do love myself a dark theme. I go with
-[[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow
-night]]. Reminder: when changing a theme, we should change the initial
-background color of frames in [[(frame-bg)][frame parameters]].
+I do love myself a dark theme. I go with [[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow night]]. Reminder: when changing a theme, we should change the initial background color of frames in [[(frame-bg)][frame parameters]].
 
 #+begin_src emacs-lisp
 (igloo-use-package color-theme-sanityinc-tomorrow
@@ -597,8 +451,7 @@ background color of frames in [[(frame-bg)][frame parameters]].
 
 *** Startup
 
-I like seeing a startup message that tells me how long Emacs took to
-start up (lo and behold the sub-0.5s startup times).
+I like seeing a startup message that tells me how long Emacs took to start up (lo and behold the sub-0.5s startup times).
 
 #+begin_src emacs-lisp
 (add-hook 'emacs-startup-hook
@@ -610,19 +463,13 @@ start up (lo and behold the sub-0.5s startup times).
 
 *** Font
 
-/Note that not all the source blocks are exported as-is. The first
-three blocks are tangled into the =igloo-run-with-frontend= invocation
-at the bottom, using noweb syntax./
+/Note that not all the source blocks are exported as-is. The first three blocks are tangled into the =igloo-run-with-frontend= invocation at the bottom, using noweb syntax./
 
 The font itself is already set during [[(default-font)][early init]].
 
-To tell Emacs to use different fonts, one needs to specify on which
-characters those fonts should be used.
+To tell Emacs to use different fonts, one needs to specify on which characters those fonts should be used.
 
-For emojis, I use the
-[[https://github.com/googlefonts/noto-emoji][Noto Color Emoji]] font.
-I'm not very sure about the codepoint ranges, if anyone wants to check
-then feel free, but this seems to work.
+For emojis, I use the [[https://github.com/googlefonts/noto-emoji][Noto Color Emoji]] font. I'm not very sure about the codepoint ranges, if anyone wants to check then feel free, but this seems to work.
 
 #+name: setup-emoji
 #+begin_src emacs-lisp :tangle no
@@ -632,10 +479,7 @@ then feel free, but this seems to work.
       (set-fontset-font t emojis (font-spec :family "Noto Color Emoji"))))
 #+end_src
 
-For symbols, I use Symbols Nerd Font. The codepoint ranges are taken
-from
-[[https://github.com/ryanoasis/nerd-fonts/wiki/Glyph-Sets-and-Code-Points][the
-project wiki]].
+For symbols, I use Symbols Nerd Font. The codepoint ranges are taken from [[https://github.com/ryanoasis/nerd-fonts/wiki/Glyph-Sets-and-Code-Points][the project wiki]].
 
 #+name: setup-symbols
 #+begin_src emacs-lisp :tangle no
@@ -670,13 +514,7 @@ project wiki]].
 
 **** Ligatures
 
-Emacs does not do ligatures automatically, so one has to define a
-bunch of regexes (regexi?) to specify which character sequences have a
-change of being merged together. The list of ligatures was initially
-taken from the JetBrains website, then a
-[[https://github.com/JetBrains/JetBrainsMono/wiki/List-of-supported-symbols][wiki
-page]] was created, but it doesn't seem up to date, so this is updated
-on a best-effort basis.
+Emacs does not do ligatures automatically, so one has to define a bunch of regexes (regexi?) to specify which character sequences have a change of being merged together. The list of ligatures was initially taken from the JetBrains website, then a [[https://github.com/JetBrains/JetBrainsMono/wiki/List-of-supported-symbols][wiki page]] was created, but it doesn't seem up to date, so this is updated on a best-effort basis.
 
 #+name: setup-ligatures
 #+begin_src emacs-lisp :tangle no
@@ -764,15 +602,9 @@ on a best-effort basis.
 
 **** CJK characters
 
-CJK characters are supposed to be visually 2 characters wide in a
-monospace font. I mix and match different fonts for CJK and non-CJK
-characters, so a bit of fiddling with the font size is necessary to
-keep this assumption. Otherwise, be prepared to look at unaligned tags
-in org-mode 😱.
+CJK characters are supposed to be visually 2 characters wide in a monospace font. I mix and match different fonts for CJK and non-CJK characters, so a bit of fiddling with the font size is necessary to keep this assumption. Otherwise, be prepared to look at unaligned tags in org-mode 😱.
 
-The reason why it's a minor mode and not a constant is that when
-changing font size in a buffer with =text-scale-adjust=, only the
-characters with the default fontspec get resized.
+The reason why it's a minor mode and not a constant is that when changing font size in a buffer with =text-scale-adjust=, only the characters with the default fontspec get resized.
 
 #+name: setup-cjk
 #+begin_src emacs-lisp
@@ -804,9 +636,7 @@ than the surrounding text."
 
 *** Modeline
 
-This one is pretty easy - I extracted my modeline configuration to
-[[https://github.com/VojtechStep/vs-modeline.el][a separate repo]], so
-it's enough to just download it.
+This one is pretty easy - I extracted my modeline configuration to [[https://github.com/VojtechStep/vs-modeline.el][a separate repo]], so it's enough to just download it.
 
 #+begin_src emacs-lisp
 (igloo-use-package vs-modeline
@@ -821,23 +651,11 @@ it's enough to just download it.
 
 ** Input
 
-I'm learning Japanese, so sometimes I need to input Japanese text. I
-tried [[https://github.com/skk-dev/ddskk][ddskk]] for a while, but I
-found the input method unintuitive, and the documentation is in
-Japanese, so I switched to [[https://github.com/google/mozc][mozc]],
-which is the open source version of Google Japanese Input.
+I'm learning Japanese, so sometimes I need to input Japanese text. I tried [[https://github.com/skk-dev/ddskk][ddskk]] for a while, but I found the input method unintuitive, and the documentation is in Japanese, so I switched to [[https://github.com/google/mozc][mozc]], which is the open source version of Google Japanese Input.
 
-One needs to install the mozc server and Emacs helper independently of
-the extension. I use a customized version of
-[[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]],
-which builds the server, the Emacs helper, copies the mozc.el package
-to =/usr/share/emacs/site-lisp/mozc/mozc.el=, byte compiles it, and
-doesn't depend on Qt.
+One needs to install the mozc server and Emacs helper independently of the extension. I use a customized version of [[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]], which builds the server, the Emacs helper, copies the mozc.el package to =/usr/share/emacs/site-lisp/mozc/mozc.el=, byte compiles it, and doesn't depend on Qt.
 
-Since the package isn't managed with straight (see [[*Managing
-globally installed packages][Managing globally installed packages]]),
-we don't get the autoloads from the package, so let's just require it
-whenever the input method is about to be changed to "japanese-mozc".
+Since the package isn't managed with straight (see [[*Managing globally installed packages][Managing globally installed packages]]), we don't get the autoloads from the package, so let's just require it whenever the input method is about to be changed to "japanese-mozc".
 
 #+begin_src emacs-lisp
 (igloo-use-package mozc
@@ -863,22 +681,13 @@ whenever the input method is about to be changed to "japanese-mozc".
 
 ** Execution environment
 
-I struggled a little with figuring out how to keep the environment
-variables used in Emacs the same as in the rest of the system. I even
-wrote a script that was valid fish and elisp at the same time!
-[[https://github.com/VojtechStep/configs/blob/b416fc4b2236374c2f88f601a076736a57b2700b/envs.el][Check
-it out]]!
+I struggled a little with figuring out how to keep the environment variables used in Emacs the same as in the rest of the system. I even wrote a script that was valid fish and elisp at the same time! [[https://github.com/VojtechStep/configs/blob/b416fc4b2236374c2f88f601a076736a57b2700b/envs.el][Check it out]]!
 
-In the end I resigned, and now I spawn a shell process to extract the
-environment from. Turns out it's not that big of a deal, since my fish
-shell starts in about 8ms.
+In the end I resigned, and now I spawn a shell process to extract the environment from. Turns out it's not that big of a deal, since my fish shell starts in about 8ms.
 
-We already changed the default shell [[(default-shell)][here]], so we
-need to tell the package that we want the environment extracted from
-the user's default shell (=$SHELL=).
+We already changed the default shell [[(default-shell)][here]], so we need to tell the package that we want the environment extracted from the user's default shell (=$SHELL=).
 
-The list of environment variables is something you probably want to
-modify for yourself.
+The list of environment variables is something you probably want to modify for yourself.
 
 #+begin_src emacs-lisp
 (igloo-use-package exec-path-from-shell
@@ -942,5 +751,4 @@ modify for yourself.
 
 * Footnotes
 
-[fn:1] TODO: This might be solved by somehow figuring out the color at
-comptime
+[fn:1] TODO: This might be solved by somehow figuring out the color at comptime
