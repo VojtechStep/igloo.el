@@ -331,7 +331,7 @@ Deferring package loading is useful to improve startup time, because it means th
 
 The =use-package-verbose= is useful when you want to diagnose a problem with package loading - for example to see which packages take a long time to load, or when are packages loaded and configured.
 
-We instruct use-package to not emit error handling code when expanding macros. They are unnecessary when one knows their config works, which is the case here, and it helps with debugging macro-expanded code. ~It also allows the byte-compiler to properly process the =:functions= block of use-package~ Apparently, when byte-compiling, use-package still emits some comptime-only error checking code that trips up the byte compiler, so the =:functions= clause doesn't really work as intended, and it is still necessary to add =declare-function='s to the =:preface=.
+We instruct use-package to not emit error handling code when expanding macros. They are unnecessary when one knows their config works, which is the case here, and it helps with debugging macro-expanded code. +It also allows the byte-compiler to properly process the =:functions= block of use-package+ Apparently, when byte-compiling, use-package still emits some comptime-only error checking code that trips up the byte compiler, so the =:functions= clause doesn't really work as intended, and it is still necessary to add =declare-function='s to the =:preface=.
 
 #+begin_src emacs-lisp
 (eval-and-compile
