@@ -97,6 +97,139 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
        ,(cons 'use-package body))))
 #+end_src
 
+** Conventions
+
+- Prefer lazy loading
+- Follow this keyword order for =use-package= clauses:
+#+name: igloo-keyword-order
+#+begin_src emacs-lisp
+'(:disabled
+  :if
+  :after
+  :straight
+  :load-path
+  :demand
+  :defer
+  :mode
+  :commands
+  :hook
+  :custom
+  :custom-face
+  :preface
+  :init
+  :config)
+#+end_src
+- Declare keybindings to package commands in its =use-package= declaration, via =:general=
+- TODO: standardize mode-local keybindings (inspired by [[https://lccambiaghi.github.io/vanilla-emacs/readme.html][lccambiaghi's config]])
+- Put =(declare-function)='s and helper function declarations in the =:preface=
+- Use =:custom= over =(setq ..)=
+- Put arguments to =:hooks= on a new line and always wrap the triggering hooks in a list
+
+*** Linter
+
+#+begin_src emacs-lisp :tangle lint-conv.el
+(eval-when-compile
+  (require 'cl-lib)
+  (require 'subr-x))
+
+(defconst lint-keyword-order
+  <<igloo-keyword-order>>)
+
+(define-error 'unknown-keyword "Unknown keyword encountered")
+(define-error 'wrong-order "Keyword in wrong position")
+(define-error 'simple-hook "Hook form is too simple")
+
+(defun check-kw-order (form)
+  (let ((remaining-kws lint-keyword-order)
+        (package-name (cadr form)))
+    (cl-loop for kw in form
+             when (symbolp kw)
+             when (eq (string-to-char (symbol-name kw)) ?:)
+             do
+             (while (not (eq kw (car remaining-kws)))
+               (cond
+                ((cdr remaining-kws)
+                 (setq remaining-kws (cdr remaining-kws)))
+                ((memq kw lint-keyword-order)
+                 (signal 'wrong-order
+                         (list kw package-name)))
+                (t
+                 (signal 'unknown-keyword
+                         (list kw package-name))))))))
+
+(defun check-hooks (form)
+  "Checks conventional :hook usage in FORM.
+
+TODO: Not all checks are covered.
+
+Acceptable:
+:hook
+((prog-mode) . ace-jump-mode)
+
+:hook
+((prog-mode) . (lambda () (ace-jump-mode)))
+
+:hook
+((prog-mode text-mode) . ace-jump-mode)
+
+:hook
+((prog-mode text-mode) . (lambda () (ace-jump-mode)))
+
+:hook
+(((prog-mode) . ace-jump-mode)
+ ((text-mode) . ace-jump-mode))
+
+:hook
+(((prog-mode) . (lambda () (ace-jump-mode)))
+ ((text-mode) . (lambda () (ace-jump-mode))))
+
+Unacceptable:
+:hook prog-mode
+:hook (prog-mode . ace-jump-mode)
+:hook (prog-mode text-mode)
+:hook ((prog-mode . ace-jump-mode)
+       (text-mode . ace-jump-mode))"
+  (let ((package-name (cadr form)))
+    (cl-loop for rest on form
+             when (eq (car rest) :hook)
+             do
+             (let ((hooks (cadr rest)))
+               (cond
+                ((not (and (consp hooks)
+                           (consp (car hooks))))
+                 (signal 'simple-hook (list package-name)))
+                (t))))))
+
+(defun lint-files (files)
+  (with-temp-buffer
+    (cl-loop for f in files
+             when (file-readable-p f)
+             do
+             (insert-file-contents-literally f nil nil nil 'replace)
+             (goto-char (point-min))
+             (condition-case err
+                 (while t
+                   (let ((form (read (current-buffer))))
+                     (when-let* (((listp form))
+                                 ((eq (car form) 'igloo-use-package))
+                                 (package-name (cadr form)))
+                       (check-kw-order form)
+                       (check-hooks form))))
+               (end-of-file)
+               (unknown-keyword
+                (error "Unknown keyword: %s in package %s" (cadr err) (caddr err)))
+               (wrong-order
+                (error "Keyword in an unexpected position: %s in package %s" (cadr err) (caddr err)))
+               (simple-hook
+                (error "Hook form is not of expected conventional format in package %s" (cadr err)))))))
+
+(defun lint-from-args ()
+  (condition-case err
+      (lint-files command-line-args-left)
+    (t (message "%s" err)
+       (kill-emacs 1))))
+#+end_src
+
 ** Display
 
 Emacs is generally weird with its rendering pipeline, and that's a can of worms I don't want to get into here. One big observable quirk it has is that when running in server mode, it does not initialize some variables relating to faces and such.

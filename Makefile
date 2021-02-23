@@ -3,10 +3,10 @@ PREFIX:=build
 DESTDIR:=$(abspath $(PREFIX)/emacs)
 
 SRC:=igloo.org
-TANGLE:=init.el early-init.el
+TANGLE:=init.el early-init.el lint-conv.el
 TARGET:=$(patsubst %.el,%.elc,$(TANGLE))
 
-build: $(TARGET)
+build: $(TARGET) lint
 
 $(TANGLE): $(SRC)
 	$(EMACS) -q --batch --exec="(progn \
@@ -18,6 +18,9 @@ $(TANGLE): $(SRC)
 	$(EMACS) -q --batch --exec="(progn \
 	  (setq user-emacs-directory \"$(abspath $(DESTDIR))/\") \
 	  (byte-compile-file \"$?\"))"
+
+lint: $(TANGLE)
+	$(EMACS) -q --batch -l "lint-conv.el" -f lint-from-args $(TANGLE)
 
 install: $(TANGLE) $(TARGET)
 	install -Dm644 -t $(DESTDIR) $?
