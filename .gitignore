@@ -1,6 +1,7 @@
 /build/
 /init.el*
 /early-init.el*
+/lint-conv.el*
 /igloo.*
 !/igloo.org
 /extras/mozc-ut-common/*
