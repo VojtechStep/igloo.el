@@ -838,6 +838,32 @@ The list of environment variables is something you probably want to modify for y
   :config
   (exec-path-from-shell-initialize))
 #+end_src
+
+** Keybinding groundwork
+
+The keybindings in Igloo are managed by [[https://github.com/noctuid/general.el][general.el]]. It allows one to create a /definer/ to be used in subsequent bindings - in this case the =igloo-leader=, bound to ~SPC~.
+
+I don't use it here, but one can specify not only =:prefix=, but also a =:global-prefix= keyword for a definition. The difference is that the =:global-prefix= chord is used for "special states", like insert or emacs states, where the set of unbound keys might be drastically different (for example you wouldn't want to bind ~SPC~ in insert mode).
+
+#+begin_src emacs-lisp
+(defmacro igloo-lcag (key)
+  "Append LCtrl, Alt and GUI before KEY."
+  `(concat "C-M-s-" ,key))
+
+(igloo-use-package general
+  :straight t
+  :demand t
+  :config
+  (general-create-definer igloo-leader
+    :states 'motion
+    :keymaps 'override
+    :prefix "SPC")
+  (general-create-definer igloo-local-leader
+    :states 'motion
+    :keymaps 'override
+    :prefix "\\"))
+#+end_src
+
 * Input
 
 *** Japanese
