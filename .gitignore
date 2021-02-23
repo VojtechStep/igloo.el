@@ -3,3 +3,5 @@
 /early-init.el*
 /igloo.*
 !/igloo.org
+/extras/mozc-ut-common/*
+!/extras/mozc-ut-common/PKGBUILD
