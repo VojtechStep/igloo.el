@@ -37,8 +37,16 @@ Here's a cherry-picked list of some of the packages I use:
 - [[https://github.com/skeeto/elfeed][elfeed]] as an RSS reader
 
 ** Dependencies
+
+*** Build
+
 - [[https://www.gnu.org/software/make/][GNU Make]]
 - [[https://www.gnu.org/software/emacs/][GNU Emacs]] (only tested with versions 28+)
+
+*** Runtime
+
+- [[http://aspell.net/][Aspell]] (not a very hard requirement, [[https://www.cs.hmc.edu/~geoff/ispell.html][Ispell]] or [[http://hunspell.github.io/][Hunspell]] should work just fine)
+
 
 * Process
 
@@ -649,46 +657,6 @@ This one is pretty easy - I extracted my modeline configuration to [[https://git
   (vs-modeline-mode))
 #+end_src
 
-** Input
-
-*** Japanese
-
-I'm learning Japanese, so sometimes I need to input Japanese text. I tried [[https://github.com/skk-dev/ddskk][ddskk]] for a while, but I found the input method unintuitive, and the documentation is in Japanese, so I switched to [[https://github.com/google/mozc][mozc]], which is the open source version of Google Japanese Input.
-
-One needs to install the mozc server and Emacs helper independently of the extension. I use a customized version of [[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]], which builds the server, the Emacs helper, copies the mozc.el package to =/usr/share/emacs/site-lisp/mozc/mozc.el=, byte compiles it, and doesn't depend on Qt. The PKGBUILD can be found [[file:extras/mozc-ut-common/PKGBUILD][here]].
-
-Since the package isn't managed with straight (see [[*Managing globally installed packages][Managing globally installed packages]]), we don't get the autoloads from the package, so let's just require it whenever the input method is about to be changed to "japanese-mozc".
-
-#+begin_src emacs-lisp
-(igloo-use-package mozc
-  :load-path "/usr/share/emacs/site-lisp/mozc"
-  :custom
-  (mozc-candidate-style 'echo-area)
-  (default-input-method "japanese-mozc")
-  (mozc-leim-title "Aあ")
-  :preface
-  (declare-function mozc-mode "mozc")
-  (declare-function find-library-name "find-func")
-  (defun vs/--input-method-maybe-require-mozc (method)
-    (when (string-equal method "japanese-mozc")
-      (require 'mozc)))
-  :init
-  (advice-add 'activate-input-method :before #'vs/--input-method-maybe-require-mozc)
-  :config
-  (when (and (fboundp 'native-compile-async)
-             (not (subr-native-elisp-p (symbol-function #'mozc-mode))))
-    (require 'find-func)
-    (native-compile-async (find-library-name "mozc") nil t)))
-#+end_src
-
-*** Spell checking
-
-I use the builtin flyspell package with [[http://aspell.net/][aspell]]. There is not a lot of customization going on, since the out-of-the-box config works well enough, but I still haven't figured out how to prevent it from putting its files into =~=, even with =ispell-cmd-args=.
-
-#+begin_src emacs-lisp
-(use-package ispell)
-#+end_src
-
 ** Execution environment
 
 I struggled a little with figuring out how to keep the environment variables used in Emacs the same as in the rest of the system. I even wrote a script that was valid fish and elisp at the same time! [[https://github.com/VojtechStep/configs/blob/b416fc4b2236374c2f88f601a076736a57b2700b/envs.el][Check it out]]!
@@ -737,6 +705,46 @@ The list of environment variables is something you probably want to modify for y
   :config
   (exec-path-from-shell-initialize))
 #+end_src
+* Input
+
+*** Japanese
+
+I'm learning Japanese, so sometimes I need to input Japanese text. I tried [[https://github.com/skk-dev/ddskk][ddskk]] for a while, but I found the input method unintuitive, and the documentation is in Japanese, so I switched to [[https://github.com/google/mozc][mozc]], which is the open source version of Google Japanese Input.
+
+One needs to install the mozc server and Emacs helper independently of the extension. I use a customized version of [[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]], which builds the server, the Emacs helper, copies the mozc.el package to =/usr/share/emacs/site-lisp/mozc/mozc.el=, byte compiles it, and doesn't depend on Qt. The PKGBUILD can be found [[file:extras/mozc-ut-common/PKGBUILD][here]].
+
+Since the package isn't managed with straight (see [[*Managing globally installed packages][Managing globally installed packages]]), we don't get the autoloads from the package, so let's just require it whenever the input method is about to be changed to "japanese-mozc".
+
+#+begin_src emacs-lisp
+(igloo-use-package mozc
+  :load-path "/usr/share/emacs/site-lisp/mozc"
+  :custom
+  (mozc-candidate-style 'echo-area)
+  (default-input-method "japanese-mozc")
+  (mozc-leim-title "Aあ")
+  :preface
+  (declare-function mozc-mode "mozc")
+  (declare-function find-library-name "find-func")
+  (defun vs/--input-method-maybe-require-mozc (method)
+    (when (string-equal method "japanese-mozc")
+      (require 'mozc)))
+  :init
+  (advice-add 'activate-input-method :before #'vs/--input-method-maybe-require-mozc)
+  :config
+  (when (and (fboundp 'native-compile-async)
+             (not (subr-native-elisp-p (symbol-function #'mozc-mode))))
+    (require 'find-func)
+    (native-compile-async (find-library-name "mozc") nil t)))
+#+end_src
+
+*** Spell checking
+
+I use the builtin flyspell package with [[http://aspell.net/][aspell]]. There is not a lot of customization going on, since the out-of-the-box config works well enough, but I still haven't figured out how to prevent it from putting its files into =~=, even with =ispell-cmd-args=.
+
+#+begin_src emacs-lisp
+(use-package ispell)
+#+end_src
+
 * Email
 * Org
 
