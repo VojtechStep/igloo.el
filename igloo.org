@@ -102,7 +102,7 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
 - Prefer lazy loading
 - Follow this keyword order for =use-package= clauses:
 #+name: igloo-keyword-order
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 '(:disabled
   :if
   :after
