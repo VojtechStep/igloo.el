@@ -100,6 +100,7 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
 ** Conventions
 
 - Prefer lazy loading
+- Use =igloo-use-package= for builtin pakages too
 - Follow this keyword order for =use-package= clauses:
 #+name: igloo-keyword-order
 #+begin_src emacs-lisp :tangle no
@@ -124,6 +125,12 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
 - Put =(declare-function)='s and helper function declarations in the =:preface=
 - Use =:custom= over =(setq ..)=
 - Put arguments to =:hooks= on a new line and always wrap the triggering hooks in a list
+
+I was torn between specifying the keybindings in the same place as the package or in a separate Keybindings section, which is what I was using in my previous config.
+
+The pros of separating the keybindings is that you can see them all in one place, so finding potential conflicts is easier. However, the cons is that since the keybindings were applied before loading of the specific packages, sometimes the package would override your changes, and there was no easy way of deferring the binding.
+
+In the end, I decided to bundle place the bindings with the relevant package. You can get an overview of the bound keys via =general-describe-keybindings=, and conflict checking can probably be implemented in the linter.
 
 *** Linter
 
