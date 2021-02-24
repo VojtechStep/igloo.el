@@ -36,11 +36,13 @@ provides=("mozc=${_mozcver}" "mozc-ut=${_mozcver}.${_utdicdate}")
 source=("${pkgname}-git::git+https://github.com/google/mozc.git#commit=${_commit}"
         "https://osdn.net/downloads/users/27/${_utdiclink}/mozcdic-ut-${_utdicdate}.${_utdicrel}.tar.bz2"
         "https://osdn.net/projects/ponsfoot-aur/storage/mozc/ken_all-${_kendate}.zip"
-        "https://osdn.net/projects/ponsfoot-aur/storage/mozc/jigyosyo-${_jigyosyodate}.zip")
+        "https://osdn.net/projects/ponsfoot-aur/storage/mozc/jigyosyo-${_jigyosyodate}.zip"
+        "autoloads.patch")
 sha256sums=('SKIP'
             '0b71c941d96e700a80ca4081113eea7c373247269917bcaf9ace9b66d56c455e'
             'ee2615602786c0cb0f2b161656dd6bbef690f5f87b1e433f8cf23136375cd871'
-            '57b17c67913a32ceabfb5b78e6211772020b92e6a59606b4251676b108f552ea')
+            '57b17c67913a32ceabfb5b78e6211772020b92e6a59606b4251676b108f552ea'
+            'd3ab0bf54fd4a0ea9ed6ad0c3a90064e39f9accf5a14e0cc13035978c9a89ee8')
 
 prepare() {
     cd ${pkgname}-git
@@ -54,6 +56,9 @@ prepare() {
 
     # Add the UT dictionary
     cat ${srcdir}/mozcdic-ut-${_utdicdate}.${_utdicrel}/mozcdic*-ut-*.txt >> src/data/dictionary_oss/dictionary00.txt
+
+    # Correct elisp autoload code, see https://github.com/google/mozc/issues/497
+    git apply ../autoloads.patch
 
     # Add latest ZIP codes
     PYTHONPATH="${PYTHONPATH}:src/" \
@@ -83,7 +88,13 @@ package() {
     install -Dm755 out_linux/${_bldtype}/mozc_server                    ${pkgdir}/usr/lib/mozc/mozc_server
     install -Dm755 out_linux/${_bldtype}/mozc_tool                      ${pkgdir}/usr/lib/mozc/mozc_tool
 
-    echo "Installing Emacs"
+    echo "Installing Emacs package"
     install -Dm755 unix/emacs/mozc.el                                   ${pkgdir}/usr/share/emacs/site-lisp/mozc/mozc.el
     emacs --batch -f batch-byte-compile ${pkgdir}/usr/share/emacs/site-lisp/mozc/mozc.el
+    emacs --batch --eval="(progn \
+          (let ((backup-inhibited t) \
+                (version-control 'never)) \
+            (make-directory-autoloads \
+              \"${pkgdir}/usr/share/emacs/site-lisp/mozc/\" \
+              \"${pkgdir}/usr/share/emacs/site-lisp/mozc/mozc-autoloads.el\")))"
 }

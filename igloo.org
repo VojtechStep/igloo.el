@@ -100,8 +100,8 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
 ** Conventions
 
 - Prefer lazy loading
-- Use =igloo-use-package= for builtin pakages too
-- Follow this keyword order for =use-package= clauses:
+- Use =igloo-use-package= for builtin packages too
+- Follow this keyword order for =igloo-use-package= clauses:
 #+name: igloo-keyword-order
 #+begin_src emacs-lisp :tangle no
 '(:disabled
@@ -120,7 +120,7 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
   :init
   :config)
 #+end_src
-- Declare keybindings to package commands in its =use-package= declaration, via =:general=
+- Declare keybindings to package commands in its =igloo-use-package= declaration, via =:general=
 - TODO: standardize mode-local keybindings (inspired by [[https://lccambiaghi.github.io/vanilla-emacs/readme.html][lccambiaghi's config]])
 - Put =(declare-function)='s and helper function declarations in the =:preface=
 - Use =:custom= over =(setq ..)=
@@ -873,13 +873,11 @@ I don't use it here, but one can specify not only =:prefix=, but also a =:global
 
 * Input
 
-*** Japanese
+** Japanese
 
 I'm learning Japanese, so sometimes I need to input Japanese text. I tried [[https://github.com/skk-dev/ddskk][ddskk]] for a while, but I found the input method unintuitive, and the documentation is in Japanese, so I switched to [[https://github.com/google/mozc][mozc]], which is the open source version of Google Japanese Input.
 
-One needs to install the mozc server and Emacs helper independently of the extension. I use a customized version of [[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]], which builds the server, the Emacs helper, copies the mozc.el package to =/usr/share/emacs/site-lisp/mozc/mozc.el=, byte compiles it, and doesn't depend on Qt. The PKGBUILD can be found [[file:extras/mozc-ut-common/PKGBUILD][here]].
-
-Since the package isn't managed with straight (see [[*Managing globally installed packages][Managing globally installed packages]]), we don't get the autoloads from the package, so let's just require it whenever the input method is about to be changed to "japanese-mozc".
+One needs to install the mozc server and Emacs helper independently of the extension. I use a customized version of [[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]], which builds the server, the Emacs helper, copies the mozc.el package to =/usr/share/emacs/site-lisp/mozc/mozc.el=, byte compiles it, generates autoloads, and doesn't depend on Qt. The PKGBUILD can be found [[file:extras/mozc-ut-common/PKGBUILD][here]].
 
 #+begin_src emacs-lisp
 (igloo-use-package mozc
@@ -891,11 +889,8 @@ Since the package isn't managed with straight (see [[*Managing globally installe
   :preface
   (declare-function mozc-mode "mozc")
   (declare-function find-library-name "find-func")
-  (defun vs/--input-method-maybe-require-mozc (method)
-    (when (string-equal method "japanese-mozc")
-      (require 'mozc)))
   :init
-  (advice-add 'activate-input-method :before #'vs/--input-method-maybe-require-mozc)
+  (require 'mozc-autoloads)
   :config
   (when (and (fboundp 'native-compile-async)
              (not (subr-native-elisp-p (symbol-function #'mozc-mode))))
@@ -903,12 +898,12 @@ Since the package isn't managed with straight (see [[*Managing globally installe
     (native-compile-async (find-library-name "mozc") nil t)))
 #+end_src
 
-*** Spell checking
+** Spell checking
 
 I use the builtin flyspell package with [[http://aspell.net/][aspell]]. There is not a lot of customization going on, since the out-of-the-box config works well enough, but I still haven't figured out how to prevent it from putting its files into =~=, even with =ispell-cmd-args=.
 
 #+begin_src emacs-lisp
-(use-package ispell)
+(igloo-use-package ispell)
 #+end_src
 
 * Email
