@@ -12,7 +12,7 @@ $(TANGLE): $(SRC)
 	$(EMACS) -q --batch --exec="(progn \
 	  (setq user-emacs-directory \"$(abspath $(DESTDIR))/\") \
 	  (require 'org) \
-	  (org-babel-tangle-file \"$(SRC)\"))"
+	  (org-babel-tangle-file \"$?\"))"
 
 %.elc: %.el
 	$(EMACS) -q --batch --exec="(progn \
@@ -26,7 +26,7 @@ install: $(TANGLE) $(TARGET)
 	install -Dm644 -t $(DESTDIR) $?
 
 open: install
-	emacs -q --exec="(progn \
+	$(EMACS) -q --exec="(progn \
 	  (setq user-init-file \"$(abspath $(DESTDIR))/init.el\") \
 	  (setq user-emacs-directory (file-name-directory user-init-file)) \
 	  (load (expand-file-name \"early-init.elc\" user-emacs-directory)) \

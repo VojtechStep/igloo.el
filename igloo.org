@@ -125,6 +125,8 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
 - Put =(declare-function)='s and helper function declarations in the =:preface=
 - Use =:custom= over =(setq ..)=
 - Put arguments to =:hooks= on a new line and always wrap the triggering hooks in a list
+- When a more thorough documentation of package configuration is necessary, split the section into two headings - Configuration and Installation. Then, set the [[https://orgmode.org/manual/Noweb-Reference-Syntax.html][=noweb-ref=]] header argument in the Configuration section, and put the =igloo-use-package= form in the Installation section, with the proper =<< ... >>= reference.
+- Unless a different default is required, set language-specific =-offset= variables (the ones that handle tab width) to =tab-width=
 
 I was torn between specifying the keybindings in the same place as the package or in a separate Keybindings section, which is what I was using in my previous config.
 
@@ -585,6 +587,15 @@ The fish shell, which I use, is not POSIX compliant, and has a bunch of bells an
 (setq shell-file-name "/bin/sh") ;(ref:default-shell)
 #+end_src
 
+I prefer seeing code on my screen, not empty space - therefore, reduce the default tab width by a factor of 4.
+
+The reason I prefer spaces over tabs is because when working with LISP-y languages, which look good when properly aligned, you could get a mix of tabs and spaces at the beginning of lines.
+
+#+begin_src emacs-lisp
+(setq-default tab-width 2)
+(setq-default indent-tabs-mode nil)
+#+end_src
+
 *** Color theme
 
 I do love myself a dark theme. I go with [[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow night]]. Reminder: when changing a theme, we should change the initial background color of frames in [[(frame-bg)][frame parameters]].
@@ -904,6 +915,92 @@ I use the builtin flyspell package with [[http://aspell.net/][aspell]]. There is
 
 #+begin_src emacs-lisp
 (igloo-use-package ispell)
+#+end_src
+
+* Evil
+
+Emacs is a great operating system without a decent text editor, amirite fellas 😂. Up top 🤣! 
+
+** Configuration
+:PROPERTIES:
+:header-args: :tangle no :noweb-ref evil-config
+:END:
+
+Reminder: the following forms are not exported as-is, but are included in the =:custom= section of the =igloo-use-package= form under the next heading.
+
+I can't think of a time when I wanted to replace only the first occurrence on a line, therefore make the global substitution the default.
+
+#+begin_src emacs-lisp
+(evil-ex-substitue-global-t)
+#+end_src
+
+I occasionally use =visual-mode=, mostly for org files, so it's convenient to have Evil treat visual lines like it would normal lines - so for example ~D~, ~C~ and vertical movement work as one might expect.
+
+#+begin_src emacs-lisp
+(evil-respect-visual-line-mode t)
+#+end_src
+
+Make ~<~ and ~>~ respect the configured tab width.
+
+#+begin_src emacs-lisp
+(evil-shift-width tab-width)
+#+end_src
+
+I often use ~*~ to search for symbols in elisp, so make it look up symbols instead of words.
+
+#+begin_src emacs-lisp
+(evil-symbol-word-search t)
+#+end_src
+
+Make ~Y~ consistent with other capital-single-letter commands: yank to the end of line. There is always ~yy~ for yanking the whole line.
+
+#+begin_src emacs-lisp
+(evil-want-Y-yank-to-eol t)
+#+end_src
+
+Evil can setup some keybindings for other modes as well - turn it off here, because we will be using =evil-collection= instead a little later.
+
+#+begin_src emacs-lisp
+(evil-want-keybindings nil)
+#+end_src
+
+I prefer the Emacs undo heuristics to Evil's "what happens in insert mode, stays in insert mode". Also, since this is running on Emacs 28, use its new undo/redo primitives, because as beautiful as undo-tree is, it is still buggy and I don't find myself using the history explorer as often as I thought I would.
+
+#+begin_src emacs-lisp
+(evil-want-fine-undo t)
+(evil-undo-system 'undo-redo)
+#+end_src
+
+This setting somehow makes more sense to my brain when operating with visual mode around bol/eol.
+
+#+begin_src emacs-lisp
+(evil-want-visual-char-semi-exclusive t)
+#+end_src
+
+The state is shown in the modeline, no need to echo it.
+
+#+begin_src emacs-lisp
+(evil-echo-state nil)
+#+end_src
+
+** Installation
+
+Evil is one of the few packages that loads eagerly. It also contributes ~30% to the startup time, so it might be worth investigating how to make it load faster.
+
+#+begin_src emacs-lisp
+(igloo-use-package evil
+  :straight t
+  :demand
+  :custom
+  <<evil-config>>
+  :preface
+  (declare-function evil-repeat-type "evil-repeat")
+  (declare-function evil-normalize-keymaps "evil-core")
+  (declare-function evil-state-property "evil-common")
+  (declare-function evil-refresh-cursor "evil-common")
+  (declare-function evil-local-mode "evil-core")
+  :config
+  (evil-mode))
 #+end_src
 
 * Email
