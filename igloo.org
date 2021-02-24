@@ -923,6 +923,15 @@ I use the builtin flyspell package with [[http://aspell.net/][aspell]]. There is
 
 * Development
 
+Check the correctness of all declared functions.
+
+#+begin_src emacs-lisp
+(eval-when-compile
+  (check-declare-file byte-compile-current-file))
+#+end_src
+
+File footer
+
 #+begin_src emacs-lisp
 (provide 'init)
 ;;; init.el ends here
