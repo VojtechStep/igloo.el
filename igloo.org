@@ -1090,7 +1090,7 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
    ";" #'evil-ex)
   (:keymaps '(minibuffer-local-map selectrum-minibuffer-map)
    "C-v" #'yank
-   "C-w" #'evil-delete-bacward-word)
+   "C-w" #'evil-delete-backward-word)
   (igloo-leader
     "SPC" #'evil-switch-to-windows-last-buffer)
   :preface
