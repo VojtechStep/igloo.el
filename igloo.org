@@ -861,6 +861,18 @@ The list of environment variables is something you probably want to modify for y
 
 ** Keybinding groundwork
 
+Use [[https://github.com/justbur/emacs-which-key][which-key]] for showing available keybindings when a chord is not complete.
+
+#+begin_src emacs-lisp
+(igloo-use-package which-key
+  :straight t
+  :demand
+  :custom
+  (which-key-idle-delay 0.6)
+  :config
+  (which-key-mode))
+#+end_src
+ 
 The keybindings in Igloo are managed by [[https://github.com/noctuid/general.el][general.el]]. It allows one to create a /definer/ to be used in subsequent bindings - in this case the =igloo-leader=, bound to ~SPC~.
 
 I don't use it here, but one can specify not only =:prefix=, but also a =:global-prefix= keyword for a definition. The difference is that the =:global-prefix= chord is used for "special states", like insert or emacs states, where the set of unbound keys might be drastically different (for example you wouldn't want to bind ~SPC~ in insert mode).
@@ -878,10 +890,14 @@ I don't use it here, but one can specify not only =:prefix=, but also a =:global
     :states 'motion
     :keymaps 'override
     :prefix "SPC")
+  (igloo-leader
+    "" '(nil :wk "major-mode agnostic leader"))
   (general-create-definer igloo-local-leader
     :states 'motion
     :keymaps 'override
-    :prefix "\\"))
+    :prefix "\\")
+  (igloo-local-leader
+    "" '(nil :wk "major-mode specific leader")))
 #+end_src
 
 * Input
