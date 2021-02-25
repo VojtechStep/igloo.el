@@ -1162,6 +1162,27 @@ TODO: still complains about ='evil-keybindings= being present during compilation
   ("C-S-a" #'evil-numbers/dec-at-pt))
 #+end_src
 
+* Magit
+
+#+begin_src emacs-lisp
+(igloo-use-package magit
+  :straight t
+  :custom
+  (magit-save-repository-buffers nil)
+  (magit-commit-show-diff nil)
+  (magit-bury-buffer-function #'delete-frame)
+  (evil-magit-want-horizontal-movement t)
+  :general
+  (igloo-leader
+    "m" '(nil :wk "magit")
+    "mm" '(magit-status :wk "magit status")
+    "mf" '(magit-file-dispatch :wk "magit file"))
+  :preface
+  (declare-function evil-collection-magit-setup "evil-collection-magit")
+  :config
+  (evil-collection-magit-setup))
+#+end_src
+
 * Email
 * Org
 
