@@ -1011,6 +1011,27 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
   :demand
   :custom
   <<evil-config>>
+  :general
+  (:keymaps 'override
+   (igloo-lcag "h") #'evil-window-left
+   (igloo-lcag "j") #'evil-window-down
+   (igloo-lcag "k") #'evil-window-up
+   (igloo-lcag "l") #'evil-window-right
+   (igloo-lcag "S-h") #'evil-window-move-far-left
+   (igloo-lcag "S-j") #'evil-window-move-very-bottom
+   (igloo-lcag "S-k") #'evil-window-move-very-top
+   (igloo-lcag "S-l") #'evil-window-move-far-right)
+  (:states 'motion
+   "j" #'evil-next-visual-line
+   "k" #'evil-previous-visual-line
+   "L" #'evil-end-of-line-or-visual-line
+   "H" #'evil-first-non-blank-of-visual-line
+   ";" #'evil-ex)
+  (:keymaps '(minibuffer-local-map selectrum-minibuffer-map)
+   "C-v" #'yank
+   "C-w" #'evil-delete-bacward-word)
+  (igloo-leader
+    "SPC" #'evil-switch-to-windows-last-buffer)
   :preface
   (declare-function evil-repeat-type "evil-repeat")
   (declare-function evil-normalize-keymaps "evil-core")
