@@ -601,9 +601,28 @@ The reason I prefer spaces over tabs is because when working with LISP-y languag
 (setq-default tab-width 2)
 (setq-default indent-tabs-mode nil)
 (setq-default sentence-end-double-space nil)
+(setq-default truncate-lines t)
 #+end_src
 
-*** Color theme
+Emacs has built-in functionality for treating =CamelCase= and =snake_case= labels as consisting of separate "words", making it more natural to move around. Turn it on.
+
+#+begin_src emacs-lisp
+(igloo-use-package subword
+  :demand
+  :config
+  (global-subword-mode))
+#+end_src
+
+Insert bracket pairs automatically.
+
+#+begin_src emacs-lisp
+(igloo-use-package elec-pair
+  :demand
+  :config
+  (electric-pair-mode))
+#+end_src
+
+*** Appearance
 
 I do love myself a dark theme. I go with [[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow night]]. Reminder: when changing a theme, we should change the initial background color of frames in [[(frame-bg)][frame parameters]].
 
@@ -613,6 +632,43 @@ I do love myself a dark theme. I go with [[https://github.com/purcell/color-them
   :demand
   :config
   (load-theme 'sanityinc-tomorrow-night t))
+#+end_src
+
+Render a chunky boi when the cursor is over a tab.
+
+#+begin_src emacs-lisp
+(setq x-stretch-cursor t)
+#+end_src
+
+As mentioned previously, I rarely touch the mouse when operating Emacs. Therefore, graphical hover tooltips are useless, not to mention ugly. When tooltip mode is off, the information is printed in the echo-area, which I find preferable.
+
+#+begin_src emacs-lisp
+(igloo-use-package tooltip
+  :config
+  (tooltip-mode -1))
+#+end_src
+
+I try to use relative numbers for moving faster in the file - if you want to move to a line above your cursor, its easy to look at the number next to the line, and the hit ~<n>k~ for example.
+
+You will sometimes see the form =(setq-default display-line-numbers 'visual)= instead. The difference is that when the mode is turned on, it performs some additional actions, such as looking at the number of lines in the file, and then setting the gutter width accordingly (that's what =-width-start= is for). Otherwise the text will jump around as you scroll.
+
+#+begin_src emacs-lisp
+(igloo-use-package display-line-numbers
+  :demand
+  :hook
+  ((prog-mode text-mode) . display-line-numbers-mode)
+  :custom
+  (display-line-numbers-width-start t)
+  (display-line-numbers-type 'visual))
+#+end_src
+
+I like seeing TODO and related keywords highlighted in all buffers. [[https://github.com/tarsius/hl-todo][hl-todo]] to the rescue!
+
+#+begin_src emacs-lisp
+(igloo-use-package hl-todo
+  :straight t
+  :hook
+  ((prog-mode text-mode) . hl-todo-mode))
 #+end_src
 
 *** Startup
