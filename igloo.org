@@ -1042,6 +1042,63 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
   (evil-mode))
 #+end_src
 
+** Extensions
+
+[[https://github.com/emacs-evil/evil-collection][evil-collection]] is a collection of Evil-themed keybindings for various special modes.
+
+#+begin_src emacs-lisp
+(igloo-use-package evil-collection
+  :straight t
+  :after evil)
+#+end_src
+
+[[https://github.com/emacs-evil/evil-surround][evil-surround]] allows one to create, change and delete paired delimiters.
+
+#+begin_src emacs-lisp
+(igloo-use-package evil-surround
+  :straight t
+  :after evil
+  :demand
+  :config
+  (global-evil-surround-mode))
+#+end_src
+
+[[https://github.com/edkolev/evil-goggles][evil-goggles]] shows a little animation when editing text with operators, to make the user aware of the region the action is applied to. Shorten the duration tho, because I still want it to be snappy.
+
+#+begin_src emacs-lisp
+(igloo-use-package evil-goggles
+  :straight t
+  :after evil
+  :demand
+  :custom
+  (evil-goggles-duration 0.1)
+  :config
+  (evil-goggles-mode))
+#+end_src
+
+[[https://github.com/linktohack/evil-commentary][evil-commentary]] implements operators for (un)commenting a region, which I find familiar from my vim setup.
+
+#+begin_src emacs-lisp
+(igloo-use-package evil-commentary
+  :straight t
+  :after evil
+  :demand
+  :config
+  (evil-commentary-mode))
+#+end_src
+
+[[https://github.com/amosbird/evil-numbers][evil-numbers]] adds functions for vim's incrementing and decrementing of numbers under cursor. However, since ~C-x~ is heavily used in Emacs for other purposes, the functions are not bound to any keys by default.
+
+#+begin_src emacs-lisp
+(igloo-use-package evil-numbers
+  :straight t
+  :after evil
+  :general
+  (:states 'motion)
+  ("C-a" #'evil-numbers/inc-at-pt)
+  ("C-S-a" #'evil-numbers/dec-at-pt))
+#+end_src
+
 * Email
 * Org
 
