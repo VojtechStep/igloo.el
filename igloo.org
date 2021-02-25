@@ -282,7 +282,7 @@ as a normal Emacs process, run BODY straight away."
 :header-args: :tangle early-init.el
 :END:
 
-Emacs 27 added =early-init.el=, which is a file that gets loaded very early in the process (hence the name).
+Emacs 27 added =early-init.el=, which is a file that gets loaded very early in the process (hence the name). All the code blocks in this section are tangled into the =early-init.el= file, not =init.el=.
 
 A word of warning: the documentation states that =early-init.el= should be used for "customizing how the package system is initialized" and "customizations [...] that need to be set up before initializing", because "the early init file is read too early into the startup process".
 
@@ -432,7 +432,7 @@ We also disable the blinking cursor, because who came up with that?
 (setq menu-bar-mode nil
       tab-bar-mode nil
       tool-bar-mode nil
-      no-blinking-cursor t)
+      blink-cursor-mode nil)
 #+end_src
 
 We set the font because it doesn't make sense to let Emacs load a font that's going to get replaced later. Depending on the font you choose, it might be necessary to change the default height, which is counted in 0.1pt.
@@ -497,7 +497,8 @@ The bootstrap file location has to be accessible at both comptime and runtime.
 #+begin_src emacs-lisp
 (eval-and-compile
   (defconst igloo-straight-bootstrap
-    (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory)))
+    (eval-when-compile
+      (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))))
 #+end_src
 
 Install the package manager if it can't be found. This only happens at compile time. At runtime, it is assumed that the package manager, and all other packages for that matter, are installed.
@@ -594,6 +595,7 @@ The reason I prefer spaces over tabs is because when working with LISP-y languag
 #+begin_src emacs-lisp
 (setq-default tab-width 2)
 (setq-default indent-tabs-mode nil)
+(setq-default sentence-end-double-space nil)
 #+end_src
 
 *** Color theme
@@ -803,7 +805,7 @@ This one is pretty easy - I extracted my modeline configuration to [[https://git
                          :host github
                          :repo "VojtechStep/vs-modeline.el"
                          :local-repo "~/Code/VojtechStep/Projects/vs-modeline.el")
-  :demand t
+  :demand
   :config
   (vs-modeline-mode))
 #+end_src
@@ -870,7 +872,7 @@ I don't use it here, but one can specify not only =:prefix=, but also a =:global
 
 (igloo-use-package general
   :straight t
-  :demand t
+  :demand
   :config
   (general-create-definer igloo-leader
     :states 'motion
@@ -961,7 +963,7 @@ Make ~Y~ consistent with other capital-single-letter commands: yank to the end o
 Evil can setup some keybindings for other modes as well - turn it off here, because we will be using =evil-collection= instead a little later.
 
 #+begin_src emacs-lisp
-(evil-want-keybindings nil)
+(evil-want-keybinding nil)
 #+end_src
 
 I prefer the Emacs undo heuristics to Evil's "what happens in insert mode, stays in insert mode". Also, since this is running on Emacs 28, use its new undo/redo primitives, because as beautiful as undo-tree is, it is still buggy and I don't find myself using the history explorer as often as I thought I would.
@@ -1024,7 +1026,8 @@ Check the correctness of all declared functions.
 
 #+begin_src emacs-lisp
 (eval-when-compile
-  (check-declare-file byte-compile-current-file))
+  (when byte-compile-current-file
+    (check-declare-file byte-compile-current-file)))
 #+end_src
 
 File footer
