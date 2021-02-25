@@ -16,7 +16,9 @@ To achieve the best performance, the configuration requires a build step.
 
 Running =make= will collect all the code into =init.el= (and =early-init.el=, more on that later) and byte compile it. Once I get my hands dirty with [[https://www.emacswiki.org/emacs/GccEmacs][native compilation]], I hope to make use of it too. It will also initialize the package manager and pull all dependencies, so if you add any remote packages, it will require an internet connection.
 
-Running =make install= will put the compiled and source files into =$PREFIX/emacs/= (PREFIX is =build= by default). If you want to OVERWRITE your existing configuration, you can use =make install PREFIX=$HOME/.config=. This does NO BACKUP. Use at your own risk.
+Running =make install= will put the compiled and source files into =$PREFIX/emacs/= (PREFIX is =build= by default, but see below). If you want to OVERWRITE your existing configuration, you can use =make install PREFIX=$HOME/.config=. This does NO BACKUP. Use at your own risk.
+
+Note that because of Emacs' insufficient support for non-standard user configuration directories, it is explicitly not a supported use case to set PREFIX to anything else than =$HOME/.config=, even for the build step. It works /kinda/, but sometimes straight.el and native compilation get confused and still work as if the user config was in =$HOME/.config=. Also, since =early-init.el= can't be loaded from a non-standard location before creating a frame, many of its configurations straight up don't have any effect.
 
 Here's a cherry-picked list of some of the packages I use:
 - [[https://github.com/emacs-evil/evil][evil-mode]] for Vim keybindings

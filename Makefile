@@ -26,14 +26,15 @@ install: $(TANGLE) $(TARGET)
 	install -Dm644 -t $(DESTDIR) $?
 
 open: install
-	$(EMACS) -q --exec="(progn \
-	  (setq user-init-file \"$(abspath $(DESTDIR))/init.el\") \
-	  (setq user-emacs-directory (file-name-directory user-init-file)) \
+	$(EMACS) -q --debug-init --exec="(progn \
+	  (setq user-emacs-directory \"$(abspath $(DESTDIR))/\") \
+	  (setq user-init-file (expand-file-name \"init.el\" user-emacs-directory)) \
 	  (load (expand-file-name \"early-init.elc\" user-emacs-directory)) \
-	  (load user-init-file))"
+	  (load (expand-file-name \"init.elc\") user-emacs-directory))
 
 clean:
 	$(RM) -rf $(TANGLE) $(TARGET)
 
 distclean: clean
 	$(RM) -rf $(DESTDIR)
+	mkdir -p $(DESTDIR)
