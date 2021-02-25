@@ -118,6 +118,7 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
   :hook
   :custom
   :custom-face
+  :general
   :preface
   :init
   :config)
@@ -221,11 +222,13 @@ Unacceptable:
              (condition-case err
                  (while t
                    (let ((form (read (current-buffer))))
-                     (when-let* (((listp form))
-                                 ((eq (car form) 'igloo-use-package))
-                                 (package-name (cadr form)))
-                       (check-kw-order form)
-                       (check-hooks form))))
+                     (when (listp form)
+                       (cond
+                        ((eq (car form) 'use-package)
+                         (error "Don't use regular `use-package' for %s" (cadr form)))
+                        ((eq (car form) 'igloo-use-package)
+                         (check-kw-order form)
+                         (check-hooks form))))))
                (end-of-file)
                (unknown-keyword
                 (error "Unknown keyword: %s in package %s" (cadr err) (caddr err)))
@@ -1047,19 +1050,21 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
 ** Extensions
 
 [[https://github.com/emacs-evil/evil-collection][evil-collection]] is a collection of Evil-themed keybindings for various special modes.
+TODO: still complains about ='evil-keybindings= being present during compilation, but not during runtime.
 
 #+begin_src emacs-lisp
 (igloo-use-package evil-collection
+  :after evil
   :straight t
-  :after evil)
+  :demand)
 #+end_src
 
 [[https://github.com/emacs-evil/evil-surround][evil-surround]] allows one to create, change and delete paired delimiters.
 
 #+begin_src emacs-lisp
 (igloo-use-package evil-surround
-  :straight t
   :after evil
+  :straight t
   :demand
   :config
   (global-evil-surround-mode))
@@ -1069,8 +1074,8 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
 
 #+begin_src emacs-lisp
 (igloo-use-package evil-goggles
-  :straight t
   :after evil
+  :straight t
   :demand
   :custom
   (evil-goggles-duration 0.1)
@@ -1082,8 +1087,8 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
 
 #+begin_src emacs-lisp
 (igloo-use-package evil-commentary
-  :straight t
   :after evil
+  :straight t
   :demand
   :config
   (evil-commentary-mode))
@@ -1093,8 +1098,8 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
 
 #+begin_src emacs-lisp
 (igloo-use-package evil-numbers
-  :straight t
   :after evil
+  :straight t
   :general
   (:states 'motion)
   ("C-a" #'evil-numbers/inc-at-pt)

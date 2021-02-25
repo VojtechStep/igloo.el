@@ -8,6 +8,8 @@ TARGET:=$(patsubst %.el,%.elc,$(TANGLE))
 
 build: $(TARGET) lint
 
+install: build do-install
+
 $(TANGLE): $(SRC)
 	$(EMACS) -q --batch --exec="(progn \
 	  (setq user-emacs-directory \"$(abspath $(DESTDIR))/\") \
@@ -22,7 +24,7 @@ $(TANGLE): $(SRC)
 lint: $(TANGLE)
 	$(EMACS) -q --batch -l "lint-conv.el" -f lint-from-args $(TANGLE)
 
-install: $(TANGLE) $(TARGET)
+do-install: $(TANGLE) $(TARGET)
 	install -Dm644 -t $(DESTDIR) $?
 
 open: install
