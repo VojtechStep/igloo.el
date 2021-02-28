@@ -1257,6 +1257,8 @@ These packages have no meaningful configuration on its own (yet), except for evi
   (evil-collection-tabulated-list-setup))
 #+end_src
 
+* Docs
+
 Use an alternative viewer for builtin documentation. There is currently [[https://github.com/Wilfred/helpful/issues/251][an issue]] where the =helpful-= functions might crap out at some positions in the buffer, scrolling a few lines usually fixes it though.
 
 #+begin_src emacs-lisp
@@ -1271,6 +1273,27 @@ Use an alternative viewer for builtin documentation. There is currently [[https:
   (declare-function evil-collection-helpful-setup "modes/helpful/evil-collection-helpful")
   :config
   (evil-collection-helpful-setup))
+#+end_src
+
+Turn on evil bindings for the default Info viewer.
+
+#+begin_src emacs-lisp
+(igloo-use-package info
+  :preface
+  (declare-function evil-collection-info-setup "modes/info/evil-collection-info")
+  :config
+  (evil-collection-info-setup))
+#+end_src
+
+Show elisp function signatures in the echo area. However, it's supposed to be subtle - one can always pull up the documentation with a single keypress, so don't allow it to expand the echo area to multiple lines.
+
+#+begin_src emacs-lisp
+(igloo-use-package eldoc
+  :hook
+  ((prog-mode) . eldoc-mode)
+  :custom
+  (eldoc-idle-delay 0.25)
+  (eldoc-echo-area-use-multiline-p nil))
 #+end_src
 
 * Magit
