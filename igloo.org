@@ -1075,7 +1075,7 @@ Reminder: the following forms are not exported as-is, but are included in the =:
 I can't think of a time when I wanted to replace only the first occurrence on a line, therefore make the global substitution the default.
 
 #+begin_src emacs-lisp
-(evil-ex-substitue-global-t)
+(evil-ex-substitute-global t)
 #+end_src
 
 I occasionally use =visual-mode=, mostly for org files, so it's convenient to have Evil treat visual lines like it would normal lines - so for example ~D~, ~C~ and vertical movement work as one might expect.
@@ -1227,6 +1227,34 @@ TODO: still complains about ='evil-keybindings= being present during compilation
   (:states 'motion
    "C-a" #'evil-numbers/inc-at-pt
    "C-S-a" #'evil-numbers/dec-at-pt))
+#+end_src
+
+** Misc modes
+
+These packages have no meaningful configuration on its own (yet), except for evil-collection keybindings. A configuration should be moved out of this section if it were to get more extensive.
+
+#+begin_src emacs-lisp
+(igloo-use-package debug
+  :preface
+  (declare-function evil-collection-debug-setup "modes/debug/evil-collection-debug")
+  :config
+  (evil-collection-debug-setup))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package calc
+  :preface
+  (declare-function evil-collection-calc-setup "modes/calc/evil-collection-calc")
+  :config
+  (evil-collection-calc-setup))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package tabulated-list
+  :preface
+  (declare-function evil-collection-tabulated-list-setup "modes/tabulated-list/evil-collection-tabulated-list")
+  :config
+  (evil-collection-tabulated-list-setup))
 #+end_src
 
 Use an alternative viewer for builtin documentation. There is currently [[https://github.com/Wilfred/helpful/issues/251][an issue]] where the =helpful-= functions might crap out at some positions in the buffer, scrolling a few lines usually fixes it though.
