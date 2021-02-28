@@ -760,6 +760,48 @@ I like seeing TODO and related keywords highlighted in all buffers. [[https://gi
   ((prog-mode text-mode) . hl-todo-mode))
 #+end_src
 
+When writing a lot of lisp, it makes sense to highlight parentheses. I spent quite some time figuring out how I want the matching parenthesis to look, and I would have preferred a box around it, but there is no way to do that without having the text jerk around the screen (see [[http://emacs.1067599.n8.nabble.com/bug-13011-24-2-Text-flickering-moving-cursor-with-box-around-text-enabled-td270885.html][this bug report]]).
+
+#+begin_src emacs-lisp
+(igloo-use-package paren
+  :demand
+  :custom
+  (show-paren-delay 0)
+  :preface
+  (declare-function color-lighten-name "color")
+  (declare-function color-darken-name "color")
+  :config
+  (igloo-run-with-frontend
+   (require 'color)
+   (dolist (desc `((show-paren-match
+                    :foreground
+                    ,(face-attribute 'cursor :background)
+                    :background
+                    ,
+                    <<paren-match-bg>>
+                    :slant italic)
+                   (show-paren-mismatch
+                    :foreground nil)))
+     (let ((face (car desc))
+           (spec `((t . ,(cdr desc)))))
+       (face-spec-set face spec))))
+  (show-paren-mode))
+#+end_src
+
+This snippet generates the background color for the matching parenthesis background. The color is lightened slightly, because if the dark version was totally black, then the terminal UI would render it using the palette, e.g. the terminal background, instead of the RGB components.
+
+#+name: paren-match-bg
+#+begin_src emacs-lisp :tangle no
+(let ((bg (face-attribute 'default :background)))
+  (if (color-defined-p bg)
+      (color-lighten-name
+       (color-darken-name
+        (face-attribute 'default :background)
+        20)
+       1)
+    bg))
+#+end_src
+
 ** Startup
 
 I like seeing a startup message that tells me how long Emacs took to start up (lo and behold the sub-0.5s startup times).
