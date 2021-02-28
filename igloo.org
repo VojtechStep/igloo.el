@@ -1113,6 +1113,7 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
   :demand
   :custom
   <<evil-config>>
+  (evil-lookup-func #'helpful-at-point)
   :general
   (:keymaps 'override
    (igloo-lcag "h") #'evil-window-left
@@ -1140,6 +1141,7 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
   (declare-function evil-state-property "evil-common")
   (declare-function evil-refresh-cursor "evil-common")
   (declare-function evil-local-mode "evil-core")
+  (declare-function helpful-at-point "helpful")
   :config
   (evil-mode))
 #+end_src
@@ -1201,6 +1203,22 @@ TODO: still complains about ='evil-keybindings= being present during compilation
   (:states 'motion
    "C-a" #'evil-numbers/inc-at-pt
    "C-S-a" #'evil-numbers/dec-at-pt))
+#+end_src
+
+Use an alternative viewer for builtin documentation. There is currently [[https://github.com/Wilfred/helpful/issues/251][an issue]] where the =helpful-= functions might crap out at some positions in the buffer, scrolling a few lines usually fixes it though.
+
+#+begin_src emacs-lisp
+(igloo-use-package helpful
+  :straight t
+  :general
+  ([remap describe-function] #'helpful-function
+   [remap describe-symbol] #'helpful-symbol
+   [remap describe-variable] #'helpful-variable
+   [remap describe-key] #'helpful-key)
+  :preface
+  (declare-function evil-collection-helpful-setup "modes/helpful/evil-collection-helpful")
+  :config
+  (evil-collection-helpful-setup))
 #+end_src
 
 * Magit
