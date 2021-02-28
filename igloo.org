@@ -49,7 +49,6 @@ Here's a cherry-picked list of some of the packages I use:
 
 - [[http://aspell.net/][Aspell]] (not a very hard requirement, [[https://www.cs.hmc.edu/~geoff/ispell.html][Ispell]] or [[http://hunspell.github.io/][Hunspell]] should work just fine)
 
-
 * Process
 
 First thing in the file is going to be the file header. It's useful to add a little description and enable lexical binding (it's all the rage these days).
@@ -72,17 +71,6 @@ First thing in the file is going to be the file header. It's useful to add a lit
 ** Philosophy
 
 This configuration is built on the simple principle of "do what you can at compile time". This means that we have to properly differentiate what happens at comptime (via =eval-when-compile=), what happens at runtime (via plain forms) and what happens during both (via =eval-and-compile=).
-
-To look up if we are executing in compilation or not, we set a variable to true only during compilation:
-
-#+begin_src emacs-lisp
-(eval-and-compile
-  (defvar igloo--compiling nil
-    "Non-nill if read when compiling."))
-
-(eval-when-compile
-  (setq igloo--compiling t))
-#+end_src
 
 First, the package manager is installed and configured at compile time. At runtime, we only load it via its entry point, the bootstrap file.
 
@@ -500,7 +488,7 @@ We instruct use-package to not emit error handling code when expanding macros. T
 The bootstrap file location has to be accessible at both comptime and runtime.
 
 #+begin_src emacs-lisp
-(eval-and-compile
+(eval-when-compile
   (defconst igloo-straight-bootstrap
     (eval-when-compile
       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))))
@@ -525,7 +513,7 @@ First, download and compile it. Once it's present on the system, require it. The
 
 #+begin_src emacs-lisp
 (eval-and-compile
-  (load igloo-straight-bootstrap)
+  (load (eval-when-compile igloo-straight-bootstrap))
   (require 'straight)
   (straight-use-package 'use-package)
 
@@ -539,9 +527,101 @@ Now that the package manager is loaded, start configuring packages.
 
 I still haven't figured out how to make straight cooperate properly with local non-vcs directories. For example, mu4e and mozc require other system components, like native binaries, to be built, so they are often included in the distro's package manager. It would be nice if one didn't have to have two copies of the repo on the disk - one from the system package manager and one from straight. I use =:load-path= for those packages for now, but I loose on the nice automatic builds and such.
 
-** UI/UX
+** Execution environment
 
-*** Behaviour
+I struggled a little with figuring out how to keep the environment variables used in Emacs the same as in the rest of the system. I even wrote a script that was valid fish and elisp at the same time! [[https://github.com/VojtechStep/configs/blob/b416fc4b2236374c2f88f601a076736a57b2700b/envs.el][Check it out]]!
+
+In the end I resigned, and now I spawn a shell process to extract the environment from. Turns out it's not that big of a deal, since my fish shell starts in about 8ms.
+
+We already changed the default shell [[(default-shell)][here]], so we need to tell the package that we want the environment extracted from the user's default shell (=$SHELL=).
+
+The list of environment variables is something you probably want to modify for yourself.
+
+#+begin_src emacs-lisp
+(igloo-use-package exec-path-from-shell
+  :straight t
+  :demand
+  :custom
+  (exec-path-from-shell-shell-name (getenv "SHELL"))
+  (exec-path-from-shell-arguments nil)
+  (exec-path-from-shell-variables
+   '("PATH"
+     "MANPATH"
+     "DISPLAY"
+     "CXX"
+     "CC"
+     "XDG_CONFIG_HOME"
+     "XDG_CACHE_HOME"
+     "XDG_DATA_HOME"
+     "XAUTHORITY"
+     "GNUPGHOME"
+     "DOTFILES_HOME"
+     "CARGO_HOME"
+     "RUSTUP_HOME"
+     "STACK_ROOT"
+     "DOCKER_CONFIG"
+     "TERMINFO"
+     "SCREENSHOT_DIR"
+     "PYTHONSTARTUP"
+     "NPM_CONFIG_USERCONFIG"
+     "BROWSER"
+     "FZF_DEFAULT_COMMAND"
+     "FZF_DEFAULT_OPTS"
+     "LESSHISTFILE"
+     "LESS"
+     "DOTNET_CLI_TELEMETRY_OPTOUT"
+     "EMAIL"
+     "NIX_PATH"))
+  :config
+  (exec-path-from-shell-initialize))
+#+end_src
+
+** Keybinding groundwork
+
+Use [[https://github.com/justbur/emacs-which-key][which-key]] for showing available keybindings when a chord is not complete.
+
+#+begin_src emacs-lisp
+(igloo-use-package which-key
+  :straight t
+  :demand
+  :custom
+  (which-key-idle-delay 0.6)
+  :config
+  (which-key-mode))
+#+end_src
+
+The keybindings in Igloo are managed by [[https://github.com/noctuid/general.el][general.el]]. It allows one to create a /definer/ to be used in subsequent bindings - in this case the =igloo-leader=, bound to ~SPC~.
+
+I don't use it here, but one can specify not only =:prefix=, but also a =:global-prefix= keyword for a definition. The difference is that the =:global-prefix= chord is used for "special states", like insert or emacs states, where the set of unbound keys might be drastically different (for example you wouldn't want to bind ~SPC~ in insert mode).
+
+#+begin_src emacs-lisp
+(eval-when-compile
+  (defmacro igloo-lcag (key)
+    "Append LCtrl, Alt and GUI before KEY."
+    `(concat "C-M-s-" ,key)))
+
+(igloo-use-package general
+  :straight t
+  :demand
+  :config
+  (eval-when-compile
+    (general-create-definer igloo-leader
+      :states 'motion
+      :keymaps 'override
+      :prefix "SPC")
+    (general-create-definer igloo-local-leader
+      :states 'motion
+      :keymaps 'override
+      :prefix "\\"))
+  (igloo-leader
+    "" '(nil :wk "major-mode agnostic leader"))
+  (igloo-local-leader
+    "" '(nil :wk "major-mode specific leader")))
+#+end_src
+
+* UI/UX
+
+** Behaviour
 
 As for the appearance, I'm not a huge fan of the startup screen, so disable it.
 
@@ -595,7 +675,7 @@ The fish shell, which I use, is not POSIX compliant, and has a bunch of bells an
 
 I prefer seeing code on my screen, not empty space - therefore, reduce the default tab width by a factor of 4.
 
-The reason I prefer spaces over tabs is because when working with LISP-y languages, which look good when properly aligned, you could get a mix of tabs and spaces at the beginning of lines.
+The reason I prefer spaces over tabs is because when working with LISP-y languages, which look good when properly aligned, you could get a mix of tabs and spaces at the beginning of lines. Enabling truncated lines makes it so that by default, the text overflows off the screen, instead of breaking at the edge of the window.
 
 #+begin_src emacs-lisp
 (setq-default tab-width 2)
@@ -622,7 +702,7 @@ Insert bracket pairs automatically.
   (electric-pair-mode))
 #+end_src
 
-*** Appearance
+** Appearance
 
 I do love myself a dark theme. I go with [[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow night]]. Reminder: when changing a theme, we should change the initial background color of frames in [[(frame-bg)][frame parameters]].
 
@@ -671,7 +751,7 @@ I like seeing TODO and related keywords highlighted in all buffers. [[https://gi
   ((prog-mode text-mode) . hl-todo-mode))
 #+end_src
 
-*** Startup
+** Startup
 
 I like seeing a startup message that tells me how long Emacs took to start up (lo and behold the sub-0.5s startup times).
 
@@ -683,7 +763,7 @@ I like seeing a startup message that tells me how long Emacs took to start up (l
               gcs-done gc-elapsed)))
 #+end_src
 
-*** Font
+** Font
 
 /Note that not all the source blocks are exported as-is. The first three blocks are tangled into the =igloo-run-with-frontend= invocation at the bottom, using noweb syntax./
 
@@ -856,7 +936,7 @@ than the surrounding text."
   (igloo-scaled-cjk-chars))
 #+end_src
 
-*** Modeline
+** Modeline
 
 This one is pretty easy - I extracted my modeline configuration to [[https://github.com/VojtechStep/vs-modeline.el][a separate repo]], so it's enough to just download it.
 
@@ -869,96 +949,6 @@ This one is pretty easy - I extracted my modeline configuration to [[https://git
   :demand
   :config
   (vs-modeline-mode))
-#+end_src
-
-** Execution environment
-
-I struggled a little with figuring out how to keep the environment variables used in Emacs the same as in the rest of the system. I even wrote a script that was valid fish and elisp at the same time! [[https://github.com/VojtechStep/configs/blob/b416fc4b2236374c2f88f601a076736a57b2700b/envs.el][Check it out]]!
-
-In the end I resigned, and now I spawn a shell process to extract the environment from. Turns out it's not that big of a deal, since my fish shell starts in about 8ms.
-
-We already changed the default shell [[(default-shell)][here]], so we need to tell the package that we want the environment extracted from the user's default shell (=$SHELL=).
-
-The list of environment variables is something you probably want to modify for yourself.
-
-#+begin_src emacs-lisp
-(igloo-use-package exec-path-from-shell
-  :straight t
-  :demand
-  :custom
-  (exec-path-from-shell-shell-name (getenv "SHELL"))
-  (exec-path-from-shell-arguments nil)
-  (exec-path-from-shell-variables
-   '("PATH"
-     "MANPATH"
-     "DISPLAY"
-     "CXX"
-     "CC"
-     "XDG_CONFIG_HOME"
-     "XDG_CACHE_HOME"
-     "XDG_DATA_HOME"
-     "XAUTHORITY"
-     "GNUPGHOME"
-     "DOTFILES_HOME"
-     "CARGO_HOME"
-     "RUSTUP_HOME"
-     "STACK_ROOT"
-     "DOCKER_CONFIG"
-     "TERMINFO"
-     "SCREENSHOT_DIR"
-     "PYTHONSTARTUP"
-     "NPM_CONFIG_USERCONFIG"
-     "BROWSER"
-     "FZF_DEFAULT_COMMAND"
-     "FZF_DEFAULT_OPTS"
-     "LESSHISTFILE"
-     "LESS"
-     "DOTNET_CLI_TELEMETRY_OPTOUT"
-     "EMAIL"
-     "NIX_PATH"))
-  :config
-  (exec-path-from-shell-initialize))
-#+end_src
-
-** Keybinding groundwork
-
-Use [[https://github.com/justbur/emacs-which-key][which-key]] for showing available keybindings when a chord is not complete.
-
-#+begin_src emacs-lisp
-(igloo-use-package which-key
-  :straight t
-  :demand
-  :custom
-  (which-key-idle-delay 0.6)
-  :config
-  (which-key-mode))
-#+end_src
- 
-The keybindings in Igloo are managed by [[https://github.com/noctuid/general.el][general.el]]. It allows one to create a /definer/ to be used in subsequent bindings - in this case the =igloo-leader=, bound to ~SPC~.
-
-I don't use it here, but one can specify not only =:prefix=, but also a =:global-prefix= keyword for a definition. The difference is that the =:global-prefix= chord is used for "special states", like insert or emacs states, where the set of unbound keys might be drastically different (for example you wouldn't want to bind ~SPC~ in insert mode).
-
-#+begin_src emacs-lisp
-(defmacro igloo-lcag (key)
-  "Append LCtrl, Alt and GUI before KEY."
-  `(concat "C-M-s-" ,key))
-
-(igloo-use-package general
-  :straight t
-  :demand
-  :config
-  (general-create-definer igloo-leader
-    :states 'motion
-    :keymaps 'override
-    :prefix "SPC")
-  (igloo-leader
-    "" '(nil :wk "major-mode agnostic leader"))
-  (general-create-definer igloo-local-leader
-    :states 'motion
-    :keymaps 'override
-    :prefix "\\")
-  (igloo-local-leader
-    "" '(nil :wk "major-mode specific leader")))
 #+end_src
 
 * Input
@@ -1157,9 +1147,9 @@ TODO: still complains about ='evil-keybindings= being present during compilation
   :after evil
   :straight t
   :general
-  (:states 'motion)
-  ("C-a" #'evil-numbers/inc-at-pt)
-  ("C-S-a" #'evil-numbers/dec-at-pt))
+  (:states 'motion
+   "C-a" #'evil-numbers/inc-at-pt
+   "C-S-a" #'evil-numbers/dec-at-pt))
 #+end_src
 
 * Magit
@@ -1178,7 +1168,7 @@ TODO: still complains about ='evil-keybindings= being present during compilation
     "mm" '(magit-status :wk "magit status")
     "mf" '(magit-file-dispatch :wk "magit file"))
   :preface
-  (declare-function evil-collection-magit-setup "evil-collection-magit")
+  (declare-function evil-collection-magit-setup "modes/magit/evil-collection-magit")
   :config
   (evil-collection-magit-setup))
 #+end_src
