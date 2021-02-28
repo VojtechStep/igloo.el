@@ -1269,7 +1269,7 @@ I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my ti
      (flycheck-disable-checker 'emacs-lisp-checkdoc))))
 #+end_src
 
-* Development
+* Footer
 
 Check the correctness of all declared functions.
 
@@ -1279,7 +1279,7 @@ Check the correctness of all declared functions.
     (check-declare-file byte-compile-current-file)))
 #+end_src
 
-File footer
+Footer of a proper elisp file.
 
 #+begin_src emacs-lisp
 (provide 'init)
