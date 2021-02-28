@@ -1242,6 +1242,18 @@ Use an alternative viewer for builtin documentation. There is currently [[https:
   (evil-collection-magit-setup))
 #+end_src
 
+* Time tracking
+
+I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my time - it's an opensource, local-only alternative to Wakatime and similar solutions.
+
+#+begin_src emacs-lisp
+(igloo-use-package activity-watch-mode
+  :straight t
+  :defer 1
+  :config
+  (global-activity-watch-mode))
+#+end_src
+
 * Email
 * Org
 
