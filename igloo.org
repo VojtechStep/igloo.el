@@ -720,6 +720,15 @@ Render a chunky boi when the cursor is over a tab.
 (setq x-stretch-cursor t)
 #+end_src
 
+Show aggressive trailing whitespace in source files.
+
+#+begin_src emacs-lisp
+(require 'mode-local)
+(setq-mode-local prog-mode
+                 show-trailing-whitespace t)
+(face-spec-set 'trailing-whitespace '((t . (:background "red1"))))
+#+end_src
+
 As mentioned previously, I rarely touch the mouse when operating Emacs. Therefore, graphical hover tooltips are useless, not to mention ugly. When tooltip mode is off, the information is printed in the echo-area, which I find preferable.
 
 #+begin_src emacs-lisp
