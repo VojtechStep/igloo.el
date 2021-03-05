@@ -889,7 +889,7 @@ For symbols, I use Symbols Nerd Font. The codepoint ranges are taken from [[http
     (set-fontset-font t syms "Symbols Nerd Font")))
 #+end_src
 
-**** Ligatures
+*** Ligatures
 
 Emacs does not do ligatures automatically, so one has to define a bunch of regexes (regexi?) to specify which character sequences have a change of being merged together. The list of ligatures was initially taken from the JetBrains website, then a [[https://github.com/JetBrains/JetBrainsMono/wiki/List-of-supported-symbols][wiki page]] was created, but it doesn't seem up to date, so this is updated on a best-effort basis.
 
@@ -977,7 +977,7 @@ Emacs does not do ligatures automatically, so one has to define a bunch of regex
                           `([,(cdr char-regexp) 0 font-shape-gstring]))))
 #+end_src
 
-**** CJK characters
+*** CJK characters
 
 CJK characters are supposed to be visually 2 characters wide in a monospace font. I mix and match different fonts for CJK and non-CJK characters, so a bit of fiddling with the font size is necessary to keep this assumption. Otherwise, be prepared to look at unaligned tags in org-mode 😱.
 
@@ -1001,7 +1001,7 @@ than the surrounding text."
       (set-fontset-font t charset fontspec))))
 #+end_src
 
-**** Loading with frontend
+*** Loading with frontend
 
 #+begin_src emacs-lisp
 (igloo-run-with-frontend
