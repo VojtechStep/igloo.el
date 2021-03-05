@@ -1019,8 +1019,7 @@ This one is pretty easy - I extracted my modeline configuration to [[https://git
 (igloo-use-package vs-modeline
   :straight (vs-modeline :type git
                          :host github
-                         :repo "VojtechStep/vs-modeline.el"
-                         :local-repo "~/Code/VojtechStep/Projects/vs-modeline.el")
+                         :repo "VojtechStep/vs-modeline.el")
   :demand
   :config
   (vs-modeline-mode))
