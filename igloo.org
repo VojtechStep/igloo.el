@@ -618,9 +618,14 @@ I don't use it here, but one can specify not only =:prefix=, but also a =:global
       :keymaps 'override
       :prefix "\\"))
   (igloo-leader
-    "" '(nil :wk "major-mode agnostic leader"))
+    "" '(nil :wk "major-mode agnostic leader")
+    "C-g" '(keyboard-quit :wk "abort")
+    "a" '(nil :wk "apps")
+    "c" '(nil :wk "close")
+    "g" '(nil :wk "buffer control"))
   (igloo-local-leader
-    "" '(nil :wk "major-mode specific leader")))
+    "" '(nil :wk "major-mode specific leader")
+    "C-g" '(keyboard-quit :wk "abort")))
 #+end_src
 
 [[https://github.com/magit/transient][Transient]] seems like a really nice interface, and I want to investigate its usage in the future. For now, just enable the quit-on-q feature.
@@ -632,6 +637,43 @@ I don't use it here, but one can specify not only =:prefix=, but also a =:global
   (declare-function transient-bind-q-to-quit "transient")
   :config
   (transient-bind-q-to-quit))
+#+end_src
+
+*** Basic keybindings
+
+This section contains package declarations for built-in functionality that only have associated keybindings.
+
+#+begin_src emacs-lisp
+(igloo-use-package newcomment
+  :general
+  (:states '(motion insert)
+   "C-;" #'comment-dwim))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package simple
+  :general
+  (:states 'insert
+   "C-v" #'yank
+   "C-S-v" #'quoted-insert)
+  (:states 'visual
+   "gl" #'count-words-region))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package align
+  :general
+  (:states 'visual
+   "<tab>" #'align))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package files
+  :general
+  (igloo-leader
+    "cc" '(bury-buffer :wk "close buffer")
+    "gr" '(revert-buffer :wk "revert buffer")
+    "gR" '(rename-buffer :wk "rename buffer")))
 #+end_src
 
 * UI/UX
