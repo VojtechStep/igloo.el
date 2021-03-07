@@ -1162,7 +1162,7 @@ I use the builtin flyspell package with [[http://aspell.net/][aspell]]. There is
 
 * Evil
 
-Emacs is a great operating system without a decent text editor, amirite fellas 😂. Up top 🤣! 
+Emacs is a great operating system without a decent text editor, amirite fellas 😂. Up top 🤣!
 
 ** Configuration
 :PROPERTIES:
@@ -1418,7 +1418,7 @@ Show elisp function signatures in the echo area. However, it's supposed to be su
 
 * Time tracking
 
-I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my time - it's an opensource, local-only alternative to Wakatime and similar solutions.
+I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my time - it's an opensource, local-only alternative to WakaTime and similar solutions.
 
 #+begin_src emacs-lisp
 (igloo-use-package activity-watch-mode
