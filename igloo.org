@@ -684,7 +684,7 @@ As for the appearance, I'm not a huge fan of the startup screen, so disable it.
 
 I also consider myself a 1337 h4x0r, so don't nag me about advanced-level commands.
 
-I use [[https://github.com/raxod502/selectrum][selectrum]] as a completion framework (more on that later), so I don't care much about shorter ways I can type in commands.
+I use [[https://github.com/raxod502/selectrum][selectrum]] as a completion framework (more on that [[*Selection framework][later]]), so I don't care much about shorter ways I can type in commands.
 
 #+begin_src emacs-lisp
 (setq inhibit-startup-screen t
@@ -1067,6 +1067,64 @@ This one is pretty easy - I extracted my modeline configuration to [[https://git
   (vs-modeline-mode))
 #+end_src
 
+** Selection framework
+
+Selection framework is a framework for selecting /things/ - the things can be commands when running =execute-command= (~M-x~), files when running =find-file= (~C-x C-f~), symbols when running =describe-symbol= (~C-h o~), or anything, really.
+
+From the many options available, [[https://emacs-helm.github.io/helm/][helm]], [[https://github.com/abo-abo/swiper][Ivy]], [[https://www.gnu.org/software/emacs/manual/html_mono/ido.html][ido]] and [[https://github.com/raxod502/selectrum][selectrum]] seem to be the most popular. I've only tried helm and selectrum, and while both seem capable of being one's daily driver, I prefer selectrum. It works as a drop-in replacement for the built-in completion framework, so many commands use it automatically. Helm, on the other hand, requires reimplementations of these features, which makes it (in my opinion) a little bloated.
+
+I set =minibuffer-follows-selected-frame= to nil, which makes minibuffers bound to the frame they were invoked in. Also sprinkle a little evil bindings on the minibuffer operations.
+
+#+begin_src emacs-lisp
+(igloo-use-package selectrum
+  :straight t
+  :custom
+  (minibuffer-follows-selected-frame nil)
+  :custom-face
+  (selectrum-current-candidate ((t (:weight bold
+                                    :background "#373b47"
+                                    :foreground "#ffffff"))))
+  :general
+  (:keymaps 'selectrum-minibuffer-map
+   "C-v" #'yank
+   "C-w" #'evil-delete-backward-word
+   "C-j" #'selectrum-next-candidate
+   "C-k" #'selectrum-previous-candidate)
+  :preface
+  (declare-function selectrum-mode "selectrum")
+  :init
+  (selectrum-mode))
+#+end_src
+
+[[https://github.com/raxod502/prescient.el][prescient]] is a package for sorting and filtering the list of candidates shown by the selection framework. Another popular alternative is [[https://github.com/oantolin/orderless][orderless]], which seems to have better performance at the expense of having less powerful queries (last time I checked).
+
+Prescient also sorts the candidates according to the frequency of their use, so make this information persistent in a file somewhere.
+
+#+begin_src emacs-lisp
+(igloo-use-package prescient
+  :straight t
+  :custom
+  (prescient-filter-method '(literal initialism fuzzy))
+  :preface
+  (declare-function prescient-persist-mode "prescient")
+  :config
+  (prescient-persist-mode))
+#+end_src
+
+This package is a glue for integrating prescient into selectrum. The =:after= clause only specifies =selectrum=, because this package will load prescient by itself.
+
+#+begin_src emacs-lisp
+(igloo-use-package selectrum-prescient
+  :after selectrum
+  :straight t
+  :demand
+  :custom-face
+  (selectrum-prescient-primary-highlight ((t (:foreground "#b5bd68"))))
+  (selectrum-prescient-secondary-highlight ((t (:foreground "#8abeb7"))))
+  :config
+  (selectrum-prescient-mode))
+#+end_src
+
 * Input
 
 ** Japanese
@@ -1195,7 +1253,7 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
    "L" #'evil-end-of-line-or-visual-line
    "H" #'evil-first-non-blank-of-visual-line
    ";" #'evil-ex)
-  (:keymaps '(minibuffer-local-map selectrum-minibuffer-map)
+  (:keymaps 'minibuffer-local-map
    "C-v" #'yank
    "C-w" #'evil-delete-backward-word)
   (igloo-leader
