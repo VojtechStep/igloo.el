@@ -48,6 +48,7 @@ Here's a cherry-picked list of some of the packages I use:
 *** Runtime
 
 - [[http://aspell.net/][Aspell]] (not a very hard requirement, [[https://www.cs.hmc.edu/~geoff/ispell.html][Ispell]] or [[http://hunspell.github.io/][Hunspell]] should work just fine)
+- [[https://github.com/sharkdp/fd][fd]] (=find= replacement)
 
 * Process
 
@@ -1123,6 +1124,88 @@ This package is a glue for integrating prescient into selectrum. The =:after= cl
   (selectrum-prescient-secondary-highlight ((t (:foreground "#8abeb7"))))
   :config
   (selectrum-prescient-mode))
+#+end_src
+
+* Project management
+
+[[https://github.com/bbatsov/projectile][projectile]] is a one-stop solution for project management. It keeps track of project directories in your system, distinguishes project types, allows one to specify build, test and run commands, you name it.
+
+** Configuration
+:PROPERTIES:
+:header-args: :tangle no :noweb-ref projectile-config
+:END:
+
+Let's start off with the risky one - when =compilation-read-command= is nil, then Emacs does not ask for user confirmation for running the compilation command for the buffer. I turn it off, because it slows me down when I'm working on my projects, and if some code I downloaded off the internetz wants to change the compilation command with something like a dirlocal variable, then Emacs asks whether it's ok to change it.
+
+#+begin_src emacs-lisp
+(compilation-read-command nil)
+#+end_src
+
+By default, projectile tries to auto-detect the "best" selection framework available for its user-querying operations. Since selectrum hooks itself into the most basic level, projectile skips it and tries to use a more "advanced" completion systems that are built-in, so force it to use the default.
+
+#+begin_src emacs-lisp
+(projectile-completion-system 'default)
+#+end_src
+
+This is just for convenience - sometimes I might have a buffer open, but not realize to which project it's bound, and when I want to open a file from the same project, I find it confusing when it doesn't show up when calling =projectile-switch-project=. So keep the current project in the candidates.
+
+#+begin_src emacs-lisp
+(projectile-current-project-on-switch 'keep)
+#+end_src
+
+When projectile looks for files, it correctly detects that I have [[https://github.com/sharkdp/fd][fd]] installed on my system (and you should too), but by default it hides dotfiles, and uses the slower =git ls-files= in git repositories, so change that.
+
+#+begin_src emacs-lisp
+(projectile-generic-command "fd . -H0 --type f --color=never")
+(projectile-git-command "fd . -H0E .git --type f --color=never")
+#+end_src
+
+** Installation
+
+There is one deviation from the conventions, and that is putting the keybinding for =igloo-ff-dwim= in the =:config= rather then the =:general= clause. This seems to be required to silence the byte compiler because of some interaction between use-package, general, and the byte compiler itself, because a hypothetically unreachable form =(autoload igloo-ff-dwim "projectile")= is generated, and then the compilation complains that it is declared twice.
+
+#+begin_src emacs-lisp
+(igloo-use-package projectile
+  :straight t
+  :custom
+  <<projectile-config>>
+  :general
+  (igloo-leader
+   "p" '(nil :wk "projectile")
+   "po" '(projectile-switch-project :wk "open project")
+   "pka" '(projectile-kill-buffers :wk "close all buffers")
+   "pd" '(projectile-dired :wk "project dired"))
+  :preface
+  (declare-function projectile-project-p "projectile")
+  (declare-function projectile-register-project-type "projectile")
+  (defun igloo-ff-dwim ()
+    (interactive)
+    (call-interactively
+     (if (projectile-project-p)
+         #'projectile-find-file
+       #'find-file)))
+  :config
+  (igloo-leader
+   "f" #'(igloo-ff-dwim :wk "files in project"))
+  <<projectile-project-types>>
+  (projectile-mode))
+#+end_src
+
+** Project types
+:PROPERTIES:
+:header-args: :tangle no :noweb-ref projectile-project-types
+:END:
+
+projectile already comes with many project types predefined, but Zig projects are not one of them, so add it manually.
+
+*** Zig
+
+#+begin_src emacs-lisp
+(projectile-register-project-type
+ 'zig '("build.zig")
+ :project-file "build.zig"
+ :compile "zig build"
+ :run "zig build run")
 #+end_src
 
 * Input
