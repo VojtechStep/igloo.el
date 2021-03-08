@@ -764,6 +764,69 @@ Insert bracket pairs automatically.
   (electric-pair-mode))
 #+end_src
 
+*** Window layout
+
+At the moment, I am using [[https://github.com/baskerville/bspwm][bspwm]] as my window manager, because it does its job of laying out windows well. I find it more intuitive to delegate the feat of managing windows to the window manager, instead of having another set of keybindings and behaviour for just Emacs.
+
+The basic setting that tells Emacs to use multiple X windows (or /frames/ in Emacs lingo) is =pop-up-frames=. When set to non-nil, it tells Emacs that it's OK to use multiple frames.
+
+The second setting is =frame-auto-hide-function=. This is the function called when closing the last window of a frame. The default value of =iconify-frame= minimizes the frame, but on window managers that don't support window minimization, it just makes the frame unresponsive and it's confusing, and the correct behaviour is to get rid of the frame altogether.
+
+#+begin_src emacs-lisp
+(setq pop-up-frames 'graphic-only)
+(setq frame-auto-hide-function #'delete-frame)
+#+end_src
+
+There is also the variable =display-buffer-alist=, which I don't think I fully understand to this day. I did use it in my previous config though, so once I start hitting some window layout issues, I will try to fix them and document them properly.
+
+Now, some packages +crap their pants+ don't handle frames gracefully, so additional configuration is required.
+
+**** Helpful
+
+When Emacs is configured to pop up /windows/, then upon invocation, helpful splits the window, moves focus to the new window, and shows the help there. When looking up symbols from the helpful buffer, it reuses the previously focused window, and further jumps back and forth, closing the piled-on layers of helpful buffers when hitting ~q~.
+
+When Emacs is configured to pop up /frames/, then upon invocation, helpful correctly pops out a new frame, but then spirals away into spawning many windows, sometimes quitting correctly, sometimes displaying non-help buffers, and it's very unpredictable.
+
+To fix these issues, I decided on the following behaviour I want from the helpful windows, and implemented the showing and closing functions accordingly:
+
+When showing help, first try to reuse a buffer that already shows a help buffer, otherwise create a new frame. When displaying in an existing frame, push itself on a "help stack".
+When closing help, remove the current buffer from the stack. If there are no other buffers in the "help stack", close the frame. If the stack is not empty, show its head.
+
+A potential improvement could be to only reuse the helpful frame if jumping from a helpful buffer - that is, always create a "helpful frame" when looking up something from code, but reuse the same frame when jumping through the documentation.
+
+One thing to note about the implementation is that helpful needs the new window to be selected when =igloo--helpful-show-buffer= returns, otherwise you hit some failed assertions.
+
+#+begin_src emacs-lisp
+(defun igloo--helpful-show-buffer (buffer &optional _) ;(ref:helpful-show-buffer)
+  (let ((window (display-buffer
+                 buffer
+                 '(display-buffer-reuse-mode-window
+                   . ((mode . helpful-mode)))))
+        (old-frame (selected-frame)))
+    (if window
+        (let ((frame (window-frame window)))
+          (unless (eq frame old-frame)
+            (select-frame-set-input-focus frame))
+          (select-window window))
+      (set-buffer buffer))
+    buffer))
+#+end_src
+
+The quitting of the buffer needs to be reimplemented too, because the default =quit-window= only closes the frame if it only ever showed one buffer - if I were to navigate to a different helpful buffer (for example by calling =helpful-at-point=), it breaks the whole thing, and once all the helpful buffers are hidden with pressing ~q~, the frame doesn't close, but instead shows the buffer from where the original helpful buffer was created.
+
+#+begin_src emacs-lisp
+(defun igloo--helpful-quit-buffer ()
+  (interactive)
+  (let* ((window (selected-window))
+         (buffer (window-buffer window))
+         (prev-buffers (window-prev-buffers window)))
+    (if (or (not prev-buffers)
+            (eq (caar prev-buffers) (current-buffer)))
+        (window--delete window)
+      (switch-to-prev-buffer window 'bury)
+      (bury-buffer-internal buffer))))
+#+end_src
+
 ** Appearance
 
 I do love myself a dark theme. I go with [[https://github.com/purcell/color-theme-sanityinc-tomorrow][Tomorrow night]]. Reminder: when changing a theme, we should change the initial background color of frames in [[(frame-bg)][frame parameters]].
@@ -1505,9 +1568,13 @@ These packages have no meaningful configuration on its own (yet), except for evi
 
 Use an alternative viewer for builtin documentation. There is currently [[https://github.com/Wilfred/helpful/issues/251][an issue]] where the =helpful-= functions might crap out at some positions in the buffer, scrolling a few lines usually fixes it though.
 
+The functions to show and close the help buffer are documented under [[(helpful-show-buffer)][Window layout]]. The ~q~ binding needs to be bound after =evil-collection-helpful-setup=, because evil-collection rebinds it to =quit-window=.
+
 #+begin_src emacs-lisp
 (igloo-use-package helpful
   :straight t
+  :custom
+  (helpful-switch-buffer-function #'igloo--helpful-show-buffer)
   :general
   ([remap describe-function] #'helpful-function
    [remap describe-symbol] #'helpful-symbol
@@ -1516,7 +1583,9 @@ Use an alternative viewer for builtin documentation. There is currently [[https:
   :preface
   (declare-function evil-collection-helpful-setup "modes/helpful/evil-collection-helpful")
   :config
-  (evil-collection-helpful-setup))
+  (evil-collection-helpful-setup)
+  (general-def 'normal 'helpful-mode-map
+    "q" #'igloo--helpful-quit-buffer))
 #+end_src
 
 Turn on evil bindings for the default Info viewer.
@@ -1548,7 +1617,6 @@ Show elisp function signatures in the echo area. However, it's supposed to be su
   :custom
   (magit-save-repository-buffers nil)
   (magit-commit-show-diff nil)
-  (magit-bury-buffer-function #'delete-frame)
   (evil-magit-want-horizontal-movement t)
   :general
   (igloo-leader
