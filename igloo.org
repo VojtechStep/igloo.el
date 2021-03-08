@@ -1656,6 +1656,43 @@ Finally, magit has keybindings for ~h~ and ~l~, so one can't move around with vi
   (evil-collection-magit-setup))
 #+end_src
 
+** libgit2
+
+There is a work-in-progress, minimal, experimental support for using [[https://github.com/libgit2/libgit2][libgit2]] as the interface for git operations, instead of running the git CLI. It should be faster, but last time I checked only one function was using it, so the difference should be imperceptible, and the only benefit is the cool feeling of running bleeding edge experimental software.
+
+First, install libgit bindings.
+
+#+begin_src emacs-lisp
+(igloo-use-package libgit
+  :straight t)
+#+end_src
+
+And then the magit integration.
+
+#+begin_src emacs-lisp
+(igloo-use-package magit-libgit
+  :after (magit libgit)
+  :straight t)
+#+end_src
+
+Note that libgit has to be manually built after installation with =(libgit-load)=. I don't think it can be done automatically when libgit is required, because if magit cannot detect the shared library file, it skips loading libgit.
+
+** Enhancements
+
+With an extension, magit can collect TODO's sprinkled around your git projects, and show them in the status buffer.
+
+#+begin_src emacs-lisp
+(igloo-use-package magit-todos
+  :after magit
+  :straight t
+  :hook
+  ((magit-mode) . magit-todos-mode)
+  :preface
+  (declare-function evil-collection-magit-todos-setup "modes/magit-todos/evil-collection-magit-todos")
+  :config
+  (evil-collection-magit-todos-setup))
+#+end_src
+
 * Time tracking
 
 I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my time - it's an opensource, local-only alternative to WakaTime and similar solutions.
