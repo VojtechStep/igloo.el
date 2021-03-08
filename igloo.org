@@ -720,10 +720,12 @@ I mostly use the keyboard to navigate my system, and it's a little frustrating w
 (setq-default mouse-highlight 1)
 #+end_src
 
-Do you like polluting your working directory with files like =.#totaly-a-file.rs=? Yeah, me neither, so disable them pesky lockfiles.
+Do you like polluting your working directory with files like =.#totaly-a-file.rs= and =existing-file.zig~=? Yeah, me neither, so disable them pesky lockfiles and backup files.
 
 #+begin_src emacs-lisp
 (setq create-lockfiles nil)
+(setq auto-save-default nil)
+(setq backup-directory-alist `(("." . ,(locate-user-emacs-file "saves/"))))
 #+end_src
 
 The fish shell, which I use, is not POSIX compliant, and has a bunch of bells and whistles that I don't need when spawning inferior shell processes. Therefore, I prefer to use the standard =/bin/sh= as the default (which should be symlinked to dash).
