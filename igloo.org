@@ -50,6 +50,7 @@ Here's a cherry-picked list of some of the packages I use:
 - [[http://aspell.net/][Aspell]] (not a very hard requirement, [[https://www.cs.hmc.edu/~geoff/ispell.html][Ispell]] or [[http://hunspell.github.io/][Hunspell]] should work just fine)
 - [[https://github.com/sharkdp/fd][fd]] (=find= replacement)
 - [[https://github.com/BurntSushi/ripgrep][rg]] (=grep= replacement)
+- [[https://github.com/direnv/direnv][direnv]] (directory-local environment variables)
 
 * Process
 
@@ -1235,6 +1236,18 @@ projectile already comes with many project types predefined, but Zig projects ar
  :project-file "build.zig"
  :compile "zig build"
  :run "zig build run")
+#+end_src
+
+** Direnv
+
+[[https://direnv.net/][direnv]] is in concept similar to Emacs' dirlocals, except instead of setting buffer-local variables, it sets environment variables, and it's not Emacs specific - you can hook it up to your terminal, so that the environment changes when you =cd= into it. It's super handy when working with things like nix-shell or (heaven forbid) Python virtualenvs.
+
+#+begin_src emacs-lisp
+(igloo-use-package direnv
+  :straight t
+  :demand
+  :config
+  (direnv-mode))
 #+end_src
 
 * Input
