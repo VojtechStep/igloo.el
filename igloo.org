@@ -49,6 +49,7 @@ Here's a cherry-picked list of some of the packages I use:
 
 - [[http://aspell.net/][Aspell]] (not a very hard requirement, [[https://www.cs.hmc.edu/~geoff/ispell.html][Ispell]] or [[http://hunspell.github.io/][Hunspell]] should work just fine)
 - [[https://github.com/sharkdp/fd][fd]] (=find= replacement)
+- [[https://github.com/BurntSushi/ripgrep][rg]] (=grep= replacement)
 
 * Process
 
@@ -1124,6 +1125,32 @@ This package is a glue for integrating prescient into selectrum. The =:after= cl
   (selectrum-prescient-secondary-highlight ((t (:foreground "#8abeb7"))))
   :config
   (selectrum-prescient-mode))
+#+end_src
+
+** Consult
+
+Remember a few paragraphs above, when I complained about Helm being bloated with its own reimplementations of some built-in pickers? Well, turns out it also contains some functionality which is /not/ built-in, and that's where [[https://github.com/minad/consult][consult]] comes in. It implements many of these commands, but on top of the Emacs API, instead of a specific selection system, so it can be used with any system that plugs into the default =completing-read=. That's *E X T E N S I B I L I T Y* baby!
+
+As for the configuration, I bind some keys to actions I use often, and I make consult use projectile's project discovery to correctly search the entire project, not only the =default-directory= of the open buffer.
+
+#+begin_src emacs-lisp
+(igloo-use-package consult
+  :straight t
+  :custom
+  (xref-show-xref-function #'consult-xref)
+  (xref-show-definitions-function #'consult-xref)
+  (consult-project-root-function #'projectile-project-root)
+  :general
+  (:states '(motion insert)
+   :keymaps 'override
+   "C-f" #'consult-ripgrep)
+  (igloo-leader
+   "gg" '(consult-buffer :wk "switch to buffer"))
+  (igloo-local-leader
+   :keymaps 'outline-mode-map
+   "g" '(consult-outline :wk "go to heading"))
+  :preface
+  (declare-function projectile-project-root "projectile"))
 #+end_src
 
 * Project management
