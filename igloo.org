@@ -1611,13 +1611,40 @@ Show elisp function signatures in the echo area. However, it's supposed to be su
 
 * Magit
 
+[[https://github.com/magit/magit][magit]] is arguably the best git experience you can have, integrated into your editing environment.
+
+** Configuration
+:PROPERTIES:
+:header-args: :tangle no :noweb-ref magit-config
+:END:
+
+The configuration provided here is rather bare.
+
+Diffs are not shown when committing, because it pops two frames (one for the commit message, one for the diff), and autofocuses the wrong one, so one has to manually change focus. TODO: this probably can be fixed with =magit-display-buffer-function=.
+
+#+begin_src emacs-lisp
+(magit-commit-show-diff nil)
+#+end_src
+
+Then, I generally don't want to be asked to save the open files, and I don't want it to be done automatically, so make magit not worry about it.
+
+#+begin_src emacs-lisp
+(magit-save-repository-buffers nil)
+#+end_src
+
+Finally, magit has keybindings for ~h~ and ~l~, so one can't move around with vim bindings in muscle memory. Evil-collection can fortunately change the bindings so that horizontal movement works as expected.
+
+#+begin_src emacs-lisp
+(evil-collection-magit-want-horizontal-movement t)
+#+end_src
+
+** Installation
+
 #+begin_src emacs-lisp
 (igloo-use-package magit
   :straight t
   :custom
-  (magit-save-repository-buffers nil)
-  (magit-commit-show-diff nil)
-  (evil-magit-want-horizontal-movement t)
+  <<magit-config>>
   :general
   (igloo-leader
     "m" '(nil :wk "magit")
@@ -1656,6 +1683,8 @@ I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my ti
      (flycheck-disable-checker 'emacs-lisp-checkdoc))))
 #+end_src
 
+* RSS Feed
+TODO: elfeed, shr, shr-tag-pre-highlight
 * Footer
 
 Check the correctness of all declared functions.
