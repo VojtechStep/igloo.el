@@ -1440,6 +1440,7 @@ The state is shown in the modeline, no need to echo it.
 Evil is one of the few packages that loads eagerly. It also contributes ~30% to the startup time, so it might be worth investigating how to make it load faster.
 
 #+begin_src emacs-lisp
+(eval-when-compile (defvar evil-want-keybinding nil))
 (igloo-use-package evil
   :straight t
   :demand
@@ -1478,10 +1479,36 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
   (evil-mode))
 #+end_src
 
+*** Sidenote
+
+Why is it necessary to =defvar= =evil-want-keybinding= outside the =use-package= form? If we take a look at the package configuration after macro expansion, we get something like this:
+
+#+begin_example emacs-lisp
+(progn
+  (use-package-statistics-gather :use-package 'evil nil)
+  (straight-use-package 'evil)
+  (use-package-statistics-gather :preface 'evil nil)
+  (eval-and-compile
+    (eval-when-compile
+      (with-demoted-errors "Cannot load evil: %S" nil
+                           (unless
+                               (featurep 'evil)
+                             (load "evil" nil t))))
+    (declare-function evil-repeat-type "evil-repeat")
+    ...)
+  (customize-set-variable 'evil-ex-substitute-global t "Customized with use-package evil")
+  ...
+#+end_example
+
+Now, evil can set up some keybindings for other modes, by =require='ing =evil-keybindings=, which is done automatically if =evil-want-keybinding= is non-nil.
+
+Since we don't want the default keybindings (because we are using evil-collection), we set =evil-want-keybindings= to nil in the =:custom= section. BUT!!! this only happens /after/ evil is loaded, which is too late. use-package loads evil during byte compilation too, so we get a warning from evil-collection that we are not properly disabling evil's keybindings.
+
+There is currently [[https://github.com/jwiegley/use-package/issues/836][no way]] to add custom code to the beginning of the preface while byte-compiling (only =:defines= and =:functions= can go there, but use-package doesn't allow for setting a default value for =defvar=), so the variable needs to be set outside. Big sad 😢.
+
 ** Extensions
 
 [[https://github.com/emacs-evil/evil-collection][evil-collection]] is a collection of Evil-themed keybindings for various special modes.
-TODO: still complains about ='evil-keybindings= being present during compilation, but not during runtime.
 
 #+begin_src emacs-lisp
 (igloo-use-package evil-collection

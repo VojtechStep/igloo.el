@@ -1,6 +1,12 @@
 EMACS=emacs
 PREFIX:=build
 DESTDIR:=$(abspath $(PREFIX)/emacs)
+DEBUG=
+USE_PACKAGE_DEBUG=nil
+
+ifeq ("$(DEBUG)","1")
+USE_PACKAGE_DEBUG='debug
+endif
 
 PERSONAL:=room.org
 PERSONAL_TPL:=$(PERSONAL).tpl
@@ -59,6 +65,7 @@ $(TANGLE): $(SRC)
 	  (setq user-emacs-directory \"$(abspath $(DESTDIR))/\") \
 	  (setq user-init-file (locate-user-emacs-file \"init.el\")) \
 	  (setq early-init-file (locate-user-emacs-file \"early-init.el\")) \
+	  (defvar use-package-verbose $(USE_PACKAGE_DEBUG)) \
 	  (byte-compile-file \"$?\"))"
 
 lint: $(TANGLE)
