@@ -127,7 +127,8 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
   :config)
 #+end_src
 - Declare keybindings to package commands in its =igloo-use-package= declaration, via =:general=
-- TODO: standardize mode-local keybindings (inspired by [[https://lccambiaghi.github.io/vanilla-emacs/readme.html][lccambiaghi's config]])
+- Use =igloo-leader= for keybindings that should be always available (such as =org-capture= or =consult-buffer=)
+- Use =igloo-local-leader= for keybindings relevant to a specific major /or/ minor mode (such as =consult-outline= or =flycheck-next-error=)
 - Put =(declare-function)='s and helper function declarations in the =:preface=
 - Use =:custom= over =(setq ..)=
 - Put arguments to =:hooks= on a new line and always wrap the triggering hooks in a list
