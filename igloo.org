@@ -848,6 +848,14 @@ I do love myself a dark theme. I go with [[https://github.com/purcell/color-them
   (load-theme 'sanityinc-tomorrow-night t))
 #+end_src
 
+Don't show a help message in every new frame.
+
+#+begin_src emacs-lisp
+(igloo-use-package server
+  :custom
+  (server-client-instructions nil))
+#+end_src
+
 Render a chunky boi when the cursor is over a tab.
 
 #+begin_src emacs-lisp
