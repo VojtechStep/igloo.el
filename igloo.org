@@ -52,6 +52,16 @@ Here's a cherry-picked list of some of the packages I use:
 - [[https://github.com/BurntSushi/ripgrep][rg]] (=grep= replacement)
 - [[https://github.com/direnv/direnv][direnv]] (directory-local environment variables)
 
+** Personal configuration
+
+Personal configuration is managed in [[file:room.org][room.org]], which is not tracked in version control, and it's used to configure such things as RSS feeds or email accounts.
+
+The template [[file:room.org.tpl][room.org.tpl]] is provided to be filled by the user. Running =make room.org= will either copy the template into room.org, or alternatively, if an existing user configuration is found, it will copy it to room.org.new, and it will prevent the user from building the project until it is filled in and manually renamed to room.org.
+
+Combining igloo.org and room.org is a little hacky. A temporary org file is created, and the two configurations are copied into it. Then, the temporary file is tangled and deleted. AFAIK this is the only way to do it, because 1) =#+INCLUDE:= directives are only resolved during exporting, not tangling, and 2) exporting to org files using =ox-org= strips header arguments from source blocks.
+
+Because of this process, an important caveat is introduced: *top-level properties*, such as =#+PROPERTY: header-args :tangle no=, *don't work in room.org*. Instead, all content should be put under a first-level heading which contains a =:PROPERTIES:= drawer.
+
 * Process
 
 First thing in the file is going to be the file header. It's useful to add a little description and enable lexical binding (it's all the rage these days).

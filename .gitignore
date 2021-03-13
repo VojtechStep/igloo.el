@@ -4,6 +4,7 @@
 /lint-conv.el*
 /igloo.*
 !/igloo.org
+/room.org
 /extras/mozc-ut-common/*
 !/extras/mozc-ut-common/PKGBUILD
 !/extras/mozc-ut-common/autoloads.patch
