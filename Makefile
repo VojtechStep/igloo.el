@@ -57,6 +57,8 @@ $(TANGLE): $(SRC)
 %.elc: %.el
 	$(EMACS) -q --batch --exec="(progn \
 	  (setq user-emacs-directory \"$(abspath $(DESTDIR))/\") \
+	  (setq user-init-file (locate-user-emacs-file \"init.el\")) \
+	  (setq early-init-file (locate-user-emacs-file \"early-init.el\")) \
 	  (byte-compile-file \"$?\"))"
 
 lint: $(TANGLE)
@@ -68,9 +70,10 @@ do-install: $(TANGLE) $(TARGET)
 open: install
 	$(EMACS) -q --debug-init --exec="(progn \
 	  (setq user-emacs-directory \"$(abspath $(DESTDIR))/\") \
-	  (setq user-init-file (expand-file-name \"init.el\" user-emacs-directory)) \
-	  (load (expand-file-name \"early-init.elc\" user-emacs-directory)) \
-	  (load (expand-file-name \"init.elc\") user-emacs-directory))"
+	  (setq user-init-file (locate-user-emacs-file \"init.el\")) \
+	  (setq early-init-file (locate-user-emacs-file \"early-init.el\"))
+	  (load (locate-user-emacs-file \"early-init.elc\")) \
+	  (load (locate-user-emacs-fiel \"init.elc\")))"
 
 clean:
 	$(RM) -rf $(TANGLE) $(TARGET)

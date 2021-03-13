@@ -79,10 +79,8 @@ First thing in the file is going to be the file header. It's useful to add a lit
 ;;; Code:
 
 (eval-when-compile (require 'cl-macs))
-(defvar esup-depth 0) ;(ref:esup)
-(setq vc-follow-symlinks t)
 (unless (featurep 'early-init)
-  (load "~/.config/emacs/early-init")) ; Hacky, see ESUP configuration
+  (load (eval-when-compile early-init-file)))
 #+end_src
 
 ** Philosophy
@@ -947,15 +945,6 @@ I like seeing a startup message that tells me how long Emacs took to start up (l
     (message "Emacs ready in %ss with %d garbage collections taking up %ss"
               (float-time (time-subtract after-init-time before-init-time))
               gcs-done gc-elapsed)))
-#+end_src
-
-For measuring startup performance, use [[https://github.com/jschaf/esup][ESUP]]. As straight uses symlinks to source files in its build structure, the builtin version control package will by default ask the user whether they want to open the file. Silencing it is apparently bad practice, because it might not run some VC hooks, but we are not using that feature of Emacs, so it's fine. These settings have to be specified as early as possible in the initialization process, which is why they are set [[(esup)][at the beginning of init.el]]. The depth is configured to 0, which means only profile the forms in the init file.
-
-TODO: Since ESUP doesn't load early-init.el, we need to load it manually if it wasn't loaded. ESUP also doesn't add the config directory to =load-path=, so the path to early-init.el has to be hardcoded, which is unpleasant.
-
-#+begin_src emacs-lisp
-(igloo-use-package esup
-  :straight t)
 #+end_src
 
 ** Font
