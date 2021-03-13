@@ -623,7 +623,7 @@ I don't use it here, but one can specify not only =:prefix=, but also a =:global
   :config
   (eval-when-compile
     (general-create-definer igloo-leader
-      :states 'motion
+      :states '(motion normal)
       :keymaps 'override
       :prefix "SPC")
     (general-create-definer igloo-local-leader
@@ -1270,6 +1270,7 @@ There is one deviation from the conventions, and that is putting the keybinding 
 #+begin_src emacs-lisp
 (igloo-use-package projectile
   :straight t
+  :commands projectile-project-root
   :custom
   <<projectile-config>>
   :general
