@@ -1757,7 +1757,51 @@ I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my ti
 #+end_src
 
 * RSS Feed
-TODO: elfeed, shr, shr-tag-pre-highlight
+TODO: shr, shr-tag-pre-highlight
+
+#+begin_src emacs-lisp
+(igloo-use-package elfeed
+  :straight t
+  :custom
+  (elfeed-feeds
+   <<elfeed-feeds>>)
+  (igloo-elfeed-ignored
+   <<elfeed-ignored>>)
+  (elfeed-db-directory (locate-user-emacs-file "elfeed"))
+  (elfeed-search-filter "@2-months-ago -junk +unread")
+  :general
+  (igloo-leader
+   "af" #'elfeed)
+  :preface
+  (declare-function evil-collection-elfeed-setup "modes/elfeed/evil-collection-elfeed")
+  (declare-function elfeed-tag-1 "elfeed-db")
+  (defcustom igloo-elfeed-ignored nil
+    "Alist of mapping from feed id to an ignore pattern."
+    :group 'igloo-elfeed
+    :type '(choice symbol
+                   string
+                   (list (choice symbol
+                                 string))))
+  (defun igloo--elfeed-matches-ignore (categories pattern)
+    (cond
+     ((stringp pattern) (member pattern categories))
+     ((symbolp pattern) (igloo--elfeed-matches-ignore categories (symbol-name pattern)))
+     ((listp pattern) (cl-loop for p in pattern
+                               always (igloo--elfeed-matches-ignore categories p)))))
+  (defun igloo--elfeed-retag-junk (entry)
+    (when-let* ((meta (elfeed-entry-meta entry))
+                (id (elfeed-entry-feed-id entry))
+                (ignored (alist-get id igloo-elfeed-ignored nil nil #'equal))
+                (categories (plist-get meta :categories)))
+      (when (cl-loop for p in ignored
+                     thereis (igloo--elfeed-matches-ignore categories p))
+        (elfeed-tag-1 entry 'junk))))
+  :init
+  (add-hook 'elfeed-new-entry-hook #'igloo--elfeed-retag-junk)
+  :config
+  (evil-collection-elfeed-setup))
+#+end_src
+
 * Footer
 
 Check the correctness of all declared functions.
