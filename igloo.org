@@ -141,6 +141,15 @@ The pros of separating the keybindings is that you can see them all in one place
 
 In the end, I decided to bundle place the bindings with the relevant package. You can get an overview of the bound keys via =general-describe-keybindings=, and conflict checking can probably be implemented in the linter.
 
+Aliasing the =-offset= variables usually produces a warning, because their original value is different from =tab-width=. For this reason, we introduce a macro to suppress this warning.
+
+#+begin_src emacs-lisp
+(eval-when-compile
+  (defmacro igloo-link-offset (offset)
+    `(let ((warning-suppress-log-types (list (list 'defvaralias 'losing-value ,offset))))
+       (defvaralias ,offset 'tab-width))))
+#+end_src
+
 *** Linter
 
 #+begin_src emacs-lisp :tangle lint-conv.el
