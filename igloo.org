@@ -1757,7 +1757,12 @@ I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my ti
 #+end_src
 
 * RSS Feed
-TODO: shr, shr-tag-pre-highlight
+
+elfeed is a great interface for reading blog posts, especially with a few improvements to reading tech blogs specifically (primarily syntax highlighting). I might even setup elfeed to manage my YouTube feed, if I ever find a way to synchronize subscriptions between elfeed and NewPipe.
+
+All the tweaks are described in the following sections - some are elfeed-specific, others apply to the rendering engine in general.
+
+Also, elfeed puts its database into =~/.elfeed= by default, which is just not right.
 
 #+begin_src emacs-lisp
 (igloo-use-package elfeed
@@ -1775,31 +1780,179 @@ TODO: shr, shr-tag-pre-highlight
   :preface
   (declare-function evil-collection-elfeed-setup "modes/elfeed/evil-collection-elfeed")
   (declare-function elfeed-tag-1 "elfeed-db")
-  (defcustom igloo-elfeed-ignored nil
-    "Alist of mapping from feed id to an ignore pattern."
-    :group 'igloo-elfeed
-    :type '(choice symbol
-                   string
-                   (list (choice symbol
-                                 string))))
-  (defun igloo--elfeed-matches-ignore (categories pattern)
-    (cond
-     ((stringp pattern) (member pattern categories))
-     ((symbolp pattern) (igloo--elfeed-matches-ignore categories (symbol-name pattern)))
-     ((listp pattern) (cl-loop for p in pattern
-                               always (igloo--elfeed-matches-ignore categories p)))))
-  (defun igloo--elfeed-retag-junk (entry)
-    (when-let* ((meta (elfeed-entry-meta entry))
-                (id (elfeed-entry-feed-id entry))
-                (ignored (alist-get id igloo-elfeed-ignored nil nil #'equal))
-                (categories (plist-get meta :categories)))
-      (when (cl-loop for p in ignored
-                     thereis (igloo--elfeed-matches-ignore categories p))
-        (elfeed-tag-1 entry 'junk))))
+  <<elfeed-ignore-funs>>
   :init
   (add-hook 'elfeed-new-entry-hook #'igloo--elfeed-retag-junk)
   :config
   (evil-collection-elfeed-setup))
+#+end_src
+
+** Ignoring entries
+
+These are helpers for hiding some entries depending on their tags - instead of trying to write a complex filter, I decided write a configurable predicate that will tag new entries with the =junk= tag. See [[file:room.org.tpl][room.org.tpl]] for details.
+
+#+begin_src emacs-lisp :noweb-ref elfeed-ignore-funs :tangle no
+(defcustom igloo-elfeed-ignored nil
+  "Alist of mapping from feed id to an ignore pattern."
+  :group 'igloo-elfeed
+  :type '(choice symbol
+                 string
+                 (list (choice symbol
+                               string))))
+(defun igloo--elfeed-matches-ignore (categories pattern)
+  (cond
+   ((stringp pattern) (member pattern categories))
+   ((symbolp pattern) (igloo--elfeed-matches-ignore categories (symbol-name pattern)))
+   ((listp pattern) (cl-loop for p in pattern
+                             always (igloo--elfeed-matches-ignore categories p)))))
+(defun igloo--elfeed-retag-junk (entry)
+  (when-let* ((meta (elfeed-entry-meta entry))
+              (id (elfeed-entry-feed-id entry))
+              (ignored (alist-get id igloo-elfeed-ignored nil nil #'equal))
+              (categories (plist-get meta :categories)))
+    (when (cl-loop for p in ignored
+                   thereis (igloo--elfeed-matches-ignore categories p))
+      (elfeed-tag-1 entry 'junk))))
+#+end_src
+
+** Simple HTML Renderer
+
+The SHR module is the renderer used by elfeed to show the HTML. It is quite configurable, so here it goes.
+
+*** Slicing images
+
+First of all, showing big images in Emacs buffers can lead to uncomfortable jumping around, specifically when they are scrolled into or out of view. SHR can instead slice up the image, and span it over multiple lines. AFAIK the grid is not configurable (hardcoded to 20 rows and 1 column), so small images suffer somewhat (it takes unexpectedly long to "scroll" through them), but that's fixable. TODO: remove slices for small images.
+
+The only way of forcing this behaviour without replacing the entire =shr-put-image= function is adding the ='(size . original)= flag to the image.
+
+#+begin_src emacs-lisp :noweb-ref shr-preface :tangle no
+(defun igloo--shr-put-image-always-slice (original spec alt &optional flags)
+  (unless (assq 'size flags)
+    (setq flags (cons '(size . original) flags)))
+  (funcall original spec alt flags))
+#+end_src
+
+*** Local links
+
+Blog posts often have links to other content in the same post - be it footnotes, backreferences, or tables of contents. Unfortunately, shr doesn't seem to natively understand such local links, and instead opens them in the system web browser.
+
+This can be fixed by remapping what =shr-browse-url= does on such a link - instead of opening the link, it searches for a text with the property =shr-target-id= matching the target of the link. This is achieved with a custom keymap that gets applied to all links beginning with =#=, by overriding how links are rendered.
+
+First, the browsing function - its task is to look at the link under point, then look around the buffer for the tag with the correct id, and move point there.
+
+#+begin_src emacs-lisp :noweb-ref shr-preface :tangle no
+(defun igloo--shr-local-href-browse ()
+  (interactive)
+  (let ((url (get-text-property (point) 'shr-url)))
+    (unless (and url
+                 (eq (string-to-char url) ?#)
+                 (goto-char (point-min))
+                 (text-property-search-forward
+                  'shr-target-id (substring url 1)))
+      (message "No local link under point"))))
+#+end_src
+
+Second, the keymap - as mentioned above, this just remaps =shr-browse-url=, and inherits the rest from =shr-map=. This needs to be put in =:config= instead of =:preface=, because it uses =shr-map=.
+
+#+begin_src emacs-lisp :noweb-ref shr-local-href-keymap :tangle no
+(defvar igloo--shr-local-href-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map shr-map)
+    (define-key map [remap shr-browse-url] #'igloo--shr-local-href-browse)
+    map))
+#+end_src
+
+And finally, the function to add the keymap to the local links. This function is used in the next section.
+
+#+begin_src emacs-lisp :noweb-ref shr-preface :tangle no
+(defun igloo--shr-local-href (a)
+  (let ((href (dom-attr a 'href))
+        (start (point)))
+    (if (not (eq (string-to-char href) ?#))
+        (shr-tag-a a)
+      (shr-generic a)
+      (put-text-property
+       start (point)
+       'keymap igloo--shr-local-href-map)
+      (shr-urlify start href (dom-attr a 'title)))))
+#+end_src
+
+*** Image links
+
+With the above configuration, images can span multiple lines. On the other hand, if an image functions as a link, then each of these lines is shown in the =shr-link= face, which is underlined - resulting in images with white lines across them. To fix this, tweak how links that are images are rendered - remove the link from the image, and add a text link with the alt text for its contents.
+
+#+begin_src emacs-lisp :noweb-ref shr-preface :tangle no
+(defun igloo--shr-render-a (a)
+  (when-let* ((inner (dom-children a))
+              (img (and (eq 'img
+                            (dom-tag inner))
+                        (car inner))))
+    (shr-tag-img img)
+    (setq a (dom-node 'a
+                      (dom-attributes a)
+                      (concat
+                       "("
+                       (or (when-let ((alt (dom-attr img 'alt)))
+                             (and (stringp alt)
+                                  (not (string-empty-p alt))
+                                  alt))
+                           "Link")
+                       ")"))))
+  (igloo--shr-local-href a))
+#+end_src
+
+*** =pre= syntax highlight
+
+Another enhancement is adding syntax highlighting to code blocks. The package =shr-tag-pre-highlight= provides a function for rendering a =pre= tag with pretty colors, but it uses the same background as the rest of the buffer - hence the wrapper that adds an overlay.
+
+#+begin_src emacs-lisp
+(igloo-use-package shr-tag-pre-highlight
+  :after shr
+  :straight t
+  :demand
+  :preface
+  (declare-function shr-tag-pre-highlight "shr-tag-pre-highlight")
+  (defun igloo--shr-render-pre (pre)
+    (require 'org-faces)
+    (let ((beg (point)))
+      (shr-tag-pre-highlight pre)
+      (overlay-put (make-overlay beg (point))
+                   'face 'org-block)))
+  :config
+  (cl-pushnew '(pre . igloo--shr-render-pre)
+              shr-external-rendering-functions
+              :test #'equal)
+  (dolist (pair '(("nix" . nix)
+                  ("haskell" . haskell)
+                  ("hl" . haskell)))
+    (cl-pushnew pair shr-tag-pre-highlight-lang-modes
+                :test #'equal)))
+#+end_src
+
+*** Installation
+
+Putting it all together - helper functions go into =:preface=, special keymap definition and the image advice into =:config=, and the link renderer is registered in a hook.
+
+#+begin_src emacs-lisp
+(igloo-use-package shr
+  :hook
+  ((elfeed-show-mode)
+   . (lambda ()
+       (setq-local shr-external-rendering-functions
+                   (append
+                    '((a . igloo--shr-render-a))
+                    shr-external-rendering-functions))))
+  :preface
+  (declare-function shr-tag-a "shr")
+  (declare-function shr-tag-img "shr")
+  (declare-function shr-put-image "shr")
+  (declare-function shr-urlify "shr")
+  (declare-function text-property-search-forward "text-property-search")
+  (declare-function dom-node "dom")
+  <<shr-preface>>
+  :config
+  <<shr-local-href-keymap>>
+  (advice-add #'shr-put-image :around #'igloo--shr-put-image-always-slice))
 #+end_src
 
 * Footer
