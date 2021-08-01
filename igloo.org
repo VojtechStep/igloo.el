@@ -1147,9 +1147,9 @@ This one is pretty easy - I extracted my modeline configuration to [[https://git
 
 #+begin_src emacs-lisp
 (igloo-use-package vs-modeline
-  :straight (vs-modeline :type git
-                         :host github
-                         :repo "VojtechStep/vs-modeline.el")
+  :straight (:type git
+             :host github
+             :repo "VojtechStep/vs-modeline.el")
   :demand
   :config
   (vs-modeline-mode))
@@ -1173,7 +1173,7 @@ I set =minibuffer-follows-selected-frame= to nil, which makes minibuffers bound 
                                     :background "#373b47"
                                     :foreground "#ffffff"))))
   :general
-  (:keymaps 'selectrum-minibuffer-map
+  (selectrum-minibuffer-map
    "C-v" #'yank
    "C-w" #'evil-delete-backward-word
    "C-j" #'selectrum-next-candidate
@@ -1227,13 +1227,12 @@ As for the configuration, I bind some keys to actions I use often, and I make co
   (xref-show-definitions-function #'consult-xref)
   (consult-project-root-function #'projectile-project-root)
   :general
-  (:states '(motion insert)
-   :keymaps 'override
+  ('(motion insert) override
    "C-f" #'consult-ripgrep)
   (igloo-leader
    "gg" '(consult-buffer :wk "switch to buffer"))
   (igloo-local-leader
-   :keymaps 'outline-mode-map
+   :keymaps '(outline-mode-map outline-minor-mode-map)
    "g" '(consult-outline :wk "go to heading"))
   :preface
   (declare-function projectile-project-root "projectile"))
@@ -1294,13 +1293,15 @@ There is one deviation from the conventions, and that is putting the keybinding 
   (declare-function projectile-register-project-type "projectile")
   (defun igloo-ff-dwim ()
     (interactive)
+    (require 'projectile)
     (call-interactively
      (if (projectile-project-p)
          #'projectile-find-file
        #'find-file)))
-  :config
+  :init
   (igloo-leader
    "f" #'(igloo-ff-dwim :wk "files in project"))
+  :config
   <<projectile-project-types>>
   (projectile-mode))
 #+end_src
@@ -1330,6 +1331,8 @@ projectile already comes with many project types predefined, but Zig projects ar
 (igloo-use-package direnv
   :straight t
   :demand
+  :custom
+  (direnv-always-show-summary nil)
   :config
   (direnv-mode))
 #+end_src
@@ -1468,7 +1471,7 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
   <<evil-config>>
   (evil-lookup-func #'helpful-at-point)
   :general
-  (:keymaps 'override
+  (override
    (igloo-lcag "h") #'evil-window-left
    (igloo-lcag "j") #'evil-window-down
    (igloo-lcag "k") #'evil-window-up
@@ -1483,7 +1486,7 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
    "L" #'evil-end-of-line-or-visual-line
    "H" #'evil-first-non-blank-of-visual-line
    ";" #'evil-ex)
-  (:keymaps 'minibuffer-local-map
+  (minibuffer-local-map
    "C-v" #'yank
    "C-w" #'evil-delete-backward-word)
   (igloo-leader
