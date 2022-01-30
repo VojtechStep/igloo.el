@@ -2361,6 +2361,16 @@ TODO: document the shit out of this, maybe extract it to a package?
   (require 'lsp-zig))
 #+end_src
 
+** BQN
+
+#+begin_src emacs-lisp
+(igloo-use-package bqn-mode
+  :straight '(:host github
+              :repo "museoa/bqn-mode")
+  :hook
+  ((bqn-mode) . (lambda () (set-input-method "BQN-Z"))))
+#+end_src
+
 * Email
 * Org
 
