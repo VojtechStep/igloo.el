@@ -1464,6 +1464,12 @@ I can't think of a time when I wanted to replace only the first occurrence on a 
 (evil-ex-substitute-global t)
 #+end_src
 
+At the same time, when I make a selection, I want replacements (and other operations) to affect only the selection, not all the lines the selection spans.
+
+#+begin_src emacs-lisp
+(evil-ex-visual-char-range t)
+#+end_src
+
 I occasionally use =visual-mode=, mostly for org files, so it's convenient to have Evil treat visual lines like it would normal lines - so for example ~D~, ~C~ and vertical movement work as one might expect.
 
 #+begin_src emacs-lisp
