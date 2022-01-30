@@ -22,3 +22,11 @@ An ignored category can be a symbol, a string, or a list, in which case the patt
 #+begin_src emacs-lisp :noweb-ref elfeed-ignored
 '()
 #+end_src
+
+** Projects
+
+List of directories which contain your git projects (consult =magit-repository-directories= for documentation)
+
+#+begin_src emacs-lisp :noweb-ref magit-directories
+'()
+#+end_src

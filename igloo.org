@@ -1745,13 +1745,30 @@ Finally, magit has keybindings for ~h~ and ~l~, so one can't move around with vi
   :straight t
   :custom
   <<magit-config>>
+  (magit-repository-directories
+    <<magit-directories>>)
+  (magit-repolist-columns
+   '(("Name" 25 magit-repolist-column-ident ())
+     ("Version" 25 magit-repolist-column-version ())
+     ("F" 1 magit-repolist-column-flag ())
+     ("￬" 1 magit-repolist-column-unpulled-from-upstream
+      ((:right-align t)
+       (:help-echo "Unpulled commits")))
+     ("￪" 1 magit-repolist-column-unpushed-to-upstream
+      ((:right-align t)
+       (:help-echo "Unpushed commits")))
+     ("Path" 99 magit-repolist-column-path ())))
   :general
   (igloo-leader
     "m" '(nil :wk "magit")
     "mm" '(magit-status :wk "magit status")
-    "mf" '(magit-file-dispatch :wk "magit file"))
+    "mf" '(magit-file-dispatch :wk "magit file")
+    "ml" '(magit-list-repositories :wk "magit repos"))
   :preface
   (declare-function evil-collection-magit-setup "modes/magit/evil-collection-magit")
+  :init
+  (with-eval-after-load 'magit-repos ; magit-repos does not load magit, so the evil-collection setup is not triggered
+    (evil-collection-magit-setup))
   :config
   (evil-collection-magit-setup))
 #+end_src
