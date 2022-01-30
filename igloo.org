@@ -2343,6 +2343,24 @@ TODO: document the shit out of this, maybe extract it to a package?
   rustic-mode)
 #+end_src
 
+** Zig
+
+#+begin_src emacs-lisp
+(igloo-use-package zig-mode
+  :straight t
+  :hook
+  ((zig-mode) . lsp-deferred)
+  :apheleia
+  (zig-fmt . ("zig" "fmt" "--stdin"))
+  zig-mode
+  :custom
+  (zig-format-on-save nil)
+  :preface
+  :config
+  (setq-mode-local zig-mode auto-fill-mode -1)
+  (require 'lsp-zig))
+#+end_src
+
 * Email
 * Org
 
