@@ -1921,6 +1921,8 @@ If FORCE is non-nil, always kill the session, regardless of prompt."
 
 [[https://github.com/magit/magit][magit]] is arguably the best git experience you can have, integrated into your editing environment.
 
+TODO: docs
+
 ** Configuration
 :PROPERTIES:
 :header-args: :tangle no :noweb-ref magit-config
