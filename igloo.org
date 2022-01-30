@@ -2306,6 +2306,20 @@ TODO: document the shit out of this, maybe extract it to a package?
   :straight t)
 #+end_src
 
+** TypeScript
+
+#+begin_src emacs-lisp
+(igloo-use-package typescript-mode
+  :straight t
+  :hook
+  ((typescript-mode) . tide-setup))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package tide
+  :straight t)
+#+end_src
+
 * Email
 * Org
 
