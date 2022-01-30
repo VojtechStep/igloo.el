@@ -1759,6 +1759,164 @@ TODO: docs, is some more setup necessary? I don't use dired that much right now.
   (evil-collection-dired-setup))
 #+end_src
 
+* Shell
+
+TODO: docs
+
+#+begin_src emacs-lisp
+(igloo-use-package sh-script
+  :init
+  (igloo-link-offset 'sh-basic-offset))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package compile
+  :hook
+  ((compilation-filter) . ansi-color-compilation-filter)
+  :general
+  (compilation-mode-map
+    "h" nil
+    "?" nil)
+  :preface
+  (declare-function evil-collection-compile-setup "modes/compile/evil-collection-compile")
+  :config
+  (evil-collection-compile-setup))
+#+end_src
+
+** Eshell
+
+*** Prompt
+
+#+begin_src emacs-lisp :noweb-ref eshell-prompt :tangle no
+(eval-when-compile
+  (defmacro igloo--eshell-segment (form fg &optional bg &rest props)
+    (declare (indent defun))
+    (unless bg (setq bg ''term-color-black))
+    (list 'propertize
+          form
+          ''face
+          (append
+           `(list :background (face-background ,bg)
+                  :foreground (face-foreground ,fg))
+           props))))
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref eshell-prompt :tangle no
+(defun igloo--eshell-prompt ()
+  (concat
+   (igloo--eshell-segment (user-login-name)
+     'term-color-green)
+   (igloo--eshell-segment "@"
+     'term-color-white)
+   (igloo--eshell-segment (system-name)
+     'term-color-white)
+   " "
+   (igloo--eshell-segment
+     (igloo-fishy-abbrev (abbreviate-file-name (eshell/pwd)))
+     'term-color-green)
+   (when-let ((branch (and (fboundp 'magit-get-current-branch)
+                           (magit-get-current-branch))))
+     (igloo--eshell-segment
+       (concat " ("
+               branch
+               ")")
+       'term-color-white))
+   (when (not (eq 0 eshell-last-command-status))
+     (igloo--eshell-segment
+      (concat " ["
+              (number-to-string eshell-last-command-status)
+              "]")
+      'term-color-red))
+   (igloo--eshell-segment "> "
+     'term-color-white)))
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref eshell-prompt :tangle no
+(defun igloo--abbrev-terminal (filename)
+  (or (equal filename "/")
+      (equal filename "~")))
+(defun igloo-fishy-abbrev (filename)
+  (let ((dir filename)
+        segments)
+    (when (file-directory-p filename)
+      (setq filename (directory-file-name filename)))
+    (unless (igloo--abbrev-terminal filename)
+      (push (file-name-nondirectory filename) segments)
+      (setq dir (directory-file-name (file-name-directory filename))))
+    (while (not (igloo--abbrev-terminal dir))
+      (let ((parent (file-name-directory dir))
+            (segment (file-name-nondirectory dir)))
+        (push (substring segment 0 1) segments)
+        (setq dir (directory-file-name parent))))
+    (if (equal dir "/")
+        (push "" segments)
+      (push dir segments))
+    (string-join segments "/")))
+#+end_src
+
+*** Completion
+
+TODO: completing files in folders is fucky.
+
+#+begin_src emacs-lisp
+(igloo-use-package fish-completion
+  :straight (:protocol https)
+  :hook
+  ((eshell-mode) . fish-completion-mode))
+#+end_src
+
+*** Aliases
+
+#+begin_src emacs-lisp
+(igloo-use-package esh-autosuggest
+  :straight t
+  :hook
+  ((eshell-mode) . esh-autosuggest-mode))
+#+end_src
+
+*** Installation
+
+#+begin_src emacs-lisp
+(igloo-use-package eshell
+  :custom
+  (eshell-prompt-function #'igloo--eshell-prompt)
+  (eshell-prompt-regexp (rx bol
+                            (literal (user-login-name))
+                            ?@
+                            (literal (system-name))
+                            " "
+                            (+ anychar)
+                            "> "))
+  :general
+  (igloo-leader
+    "as" #'eshell)
+  (insert eshell-mode-map
+    "C-d" '(igloo-eshell-C-d :wk "EOF" :no-autoload t))
+  :preface
+  (declare-function eshell-get-old-input "esh-mode")
+  (declare-function eshell-life-is-too-much "esh-mode")
+  (declare-function eshell-interactive-process "esh-cmd")
+  (declare-function eshell-send-eof-to-process "esh-proc")
+  (declare-function eshell/pwd "em-dirs")
+  (declare-function evil-collection-eshell-setup "modes/eshell/evil-collection-eshell")
+  (defun igloo-eshell-C-d (&optional force)
+    "Send C-d to running command.
+If no interactive process is running, kill the current
+Eshell session if there is no command at the last prompt.
+
+If FORCE is non-nil, always kill the session, regardless of prompt."
+    (interactive)
+    (if (eshell-interactive-process)
+        (eshell-send-eof-to-process)
+      (when (or force
+                (string-empty-p (eshell-get-old-input)))
+        (eshell-life-is-too-much))))
+  <<eshell-prompt>>
+  :config
+  (setq-mode-local eshell-mode truncate-lines nil)
+  (evil-collection-eshell-setup))
+#+end_src
+
 * Magit
 
 [[https://github.com/magit/magit][magit]] is arguably the best git experience you can have, integrated into your editing environment.
