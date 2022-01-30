@@ -1744,6 +1744,21 @@ Show elisp function signatures in the echo area. However, it's supposed to be su
   (eldoc-echo-area-use-multiline-p nil))
 #+end_src
 
+* File explorer
+
+TODO: docs, is some more setup necessary? I don't use dired that much right now.
+
+#+begin_src emacs-lisp
+(igloo-use-package dired
+  :general
+  (igloo-leader
+    "ad" '(dired :wk "Dired"))
+  :preface
+  (declare-function evil-collection-dired-setup "modes/dired/evil-collection-dired")
+  :config
+  (evil-collection-dired-setup))
+#+end_src
+
 * Magit
 
 [[https://github.com/magit/magit][magit]] is arguably the best git experience you can have, integrated into your editing environment.
