@@ -630,6 +630,24 @@ The list of environment variables is something you probably want to modify for y
   (exec-path-from-shell-initialize))
 #+end_src
 
+** Secret management
+
+TODO: docs, at least a little
+
+#+begin_src emacs-lisp
+(igloo-use-package auth-source-pass
+  :after auth-source
+  :demand
+  :custom
+  (auth-sources '(password-store)))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package epg-config
+  :custom
+  (epg-pinentry-mode 'loopback))
+#+end_src
+
 ** Keybinding groundwork
 
 Use [[https://github.com/justbur/emacs-which-key][which-key]] for showing available keybindings when a chord is not complete.
