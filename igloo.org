@@ -612,6 +612,7 @@ The list of environment variables is something you probably want to modify for y
      "DOCKER_CONFIG"
      "CABAL_CONFIG"
      "CABAL_DIR"
+     "ASPELL_CONF"
      "TERMINFO"
      "SCREENSHOT_DIR"
      "PYTHONSTARTUP"
@@ -1443,7 +1444,7 @@ One needs to install the mozc server and Emacs helper independently of the exten
 
 ** Spell checking
 
-I use the builtin flyspell package with [[http://aspell.net/][aspell]]. There is not a lot of customization going on, since the out-of-the-box config works well enough, but I still haven't figured out how to prevent it from putting its files into =~=, even with =ispell-cmd-args=.
+I use the builtin flyspell package with [[http://aspell.net/][aspell]], which is automatically picked up when installed. To prevent it from putting its shit in =$HOME=, use the =ASPELL_CONF= environment variable (search for =aspell= in the [[https://wiki.archlinux.org/title/XDG_Base_Directory#Support][ArchWiki article]]).
 
 #+begin_src emacs-lisp
 (igloo-use-package ispell)
