@@ -119,6 +119,7 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
   :mode
   :commands
   :hook
+  :apheleia
   :custom
   :custom-face
   :general
@@ -1853,6 +1854,27 @@ Often times, when trying to profile a performance bottleneck, selecting the comm
   (declare-function evil-collection-profiler-setup "modes/profiler/evil-collection-profiler")
   :config
   (evil-collection-profiler-setup))
+#+end_src
+
+* Programming
+
+TODO: docs
+
+** Code formatting
+
+#+begin_src emacs-lisp
+(igloo-use-package apheleia
+  :straight (:repo "raxod502/apheleia"))
+#+end_src
+
+TODO: brag
+
+#+begin_src emacs-lisp
+(eval-when-compile
+  (use-package apheleia-use-package
+    :straight (:host github
+               :repo "VojtechStep/apheleia-use-package.el")
+    :demand t))
 #+end_src
 
 * Email
