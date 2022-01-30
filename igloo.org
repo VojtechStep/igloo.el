@@ -1388,6 +1388,8 @@ projectile already comes with many project types predefined, but Zig projects ar
 
 This snippet allows me to type ~C-S-u~ and a hexadecimal value of a Unicode codepoint to insert it. This is apparently the norm for GTK, as it works in Chromium-derived browsers (I use Brave), and these are the only two applications where I find it relevant to input Unicode.
 
+In the Pure GTK builds, this keybinding is intercepted at the GUI framework level - and it is expected that the user holds Control and Shift while typing the hex. I programmed my keyboard to be able to support this input method, so I can switch between the two builds seamlessly. This input method also seems to work in the browser.
+
 I would also prefer it to be inside a use-package form, but I'm pretty sure that would require the funcionality to be extracted into a =require='able form (which is understandable).
 
 #+begin_src emacs-lisp
