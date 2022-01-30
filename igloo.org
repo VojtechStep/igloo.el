@@ -2020,6 +2020,36 @@ With an extension, magit can collect TODO's sprinkled around your git projects, 
   (evil-collection-magit-todos-setup))
 #+end_src
 
+** Forge
+
+TODO: https://github.com/emacs-evil/evil-collection/issues/543
+TODO: move forge configs to room.org, to not leak private/school git forges' URLs
+
+#+begin_src emacs-lisp
+(igloo-use-package forge
+  :after magit
+  :straight t
+  :demand t
+  :hook
+  ((magit-status-sections) . forge-insert-authored-pullreqs)
+  ((magit-status-sections) . forge-insert-authored-issues)
+  :custom
+  (forge-topic-list-limit '(20 . -5))
+  (forge-add-default-bindings nil)
+  :preface
+  (declare-function magit-add-section-hook "magit-section")
+  (declare-function evil-collection-forge-setup "modes/forge/evil-collection-forge")
+  :config
+  (evil-collection-forge-setup)
+  (dolist (section (list #'forge-insert-authored-pullreqs
+                         #'forge-insert-authored-issues))
+    (magit-add-section-hook
+     'magit-status-sections-hook
+     section
+     'magit-insert-unpulled-from-upstream
+     'after)))
+#+end_src
+
 * Time tracking
 
 I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my time - it's an opensource, local-only alternative to WakaTime and similar solutions.
