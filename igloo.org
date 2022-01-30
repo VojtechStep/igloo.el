@@ -2320,6 +2320,18 @@ TODO: document the shit out of this, maybe extract it to a package?
   :straight t)
 #+end_src
 
+** Rust
+
+#+begin_src emacs-lisp
+(igloo-use-package rustic
+  :straight t
+  :hook
+  ((rustic-mode) . apheleia-mode)
+  :apheleia
+  (rustfmt . ("rustup" "run" "nightly" "rustfmt" "--unstable-features" "--skip-children" "--quiet" "--emit" "stdout" file))
+  rustic-mode)
+#+end_src
+
 * Email
 * Org
 
