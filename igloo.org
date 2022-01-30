@@ -2289,6 +2289,23 @@ TODO: document the shit out of this, maybe extract it to a package?
    :test #'equal))
 #+end_src
 
+** C/C++
+
+#+begin_src emacs-lisp
+(igloo-use-package cc-mode
+  :hook
+  ((c-mode-common) . apheleia-mode)
+  ((c-mode-common) . lsp-deferred)
+  :apheleia
+  (clang-format . ("clang-format" "--assume-filename" file))
+  c-mode c++-mode java-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package cmake-mode
+  :straight t)
+#+end_src
+
 * Email
 * Org
 
