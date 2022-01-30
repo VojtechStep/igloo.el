@@ -2214,6 +2214,48 @@ TODO: reason about personal choices here
   nix-mode)
 #+end_src
 
+** Coq
+
+#+begin_src emacs-lisp
+(igloo-use-package proof-general
+  :straight t
+  :custom
+  ;; (coq-prog-name "hoqtop")
+  (proof-splash-enable nil)
+  (proof-follow-mode 'followdown)
+  (coq-compile-before-require t)
+  (proof-three-window-enable t)
+  :general
+  ((insert motion) coq-mode-map
+    "C-j" #'proof-assert-next-command-interactive
+    "C-k" #'proof-undo-last-successful-command
+    "C-<return>" #'proof-goto-point)
+  (motion coq-mode-map
+    "<tab>" #'pg-toggle-visibility)
+  (normal coq-mode-map
+    "gh" #'company-coq-doc)
+  :init
+  (when-let* ((pg-file (find-library-name "proof-general"))
+              (pg-dir (file-name-directory pg-file))
+              (ps-dir (expand-file-name "generic" pg-dir)))
+    (cl-pushnew ps-dir load-path)))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package company-coq
+  :straight t
+  :hook
+  ((coq-mode) . company-coq-mode)
+  :general
+  (company-coq-map
+    "C-<return>" #'company-coq-proof-goto-point))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package alectryon
+  :straight t)
+#+end_src
+
 * Email
 * Org
 
