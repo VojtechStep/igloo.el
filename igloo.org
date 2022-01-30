@@ -2200,6 +2200,20 @@ TODO: reason about personal choices here
   (lsp-haskell-formatting-provider "stylish-haskell"))
 #+end_src
 
+** Nix
+
+#+begin_src emacs-lisp
+(igloo-use-package nix-mode
+  :straight t
+  :mode "\\.nix\\'"
+  :hook
+  ((nix-mode) . apheleia-mode)
+  ((nix-mode) . lsp-deferred)
+  :apheleia
+  (nixpkgs-fmt . ("nixpkgs-fmt"))
+  nix-mode)
+#+end_src
+
 * Email
 * Org
 
