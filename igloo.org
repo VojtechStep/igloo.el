@@ -1835,6 +1835,23 @@ I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my ti
   (global-activity-watch-mode))
 #+end_src
 
+* Profiler
+
+Often times, when trying to profile a performance bottleneck, selecting the commands from the ~M-x~ popup introduces unnecessary perfcounters, so make keybindings for the most commonly used commands.
+
+#+begin_src emacs-lisp
+(igloo-use-package profiler
+  :general
+  (igloo-leader
+    "dd" '(profiler-start :wk "Start profiler")
+    "ds" '(profiler-stop :wk "Stop profiler")
+    "dr" '(profiler-report :wk "Report profiling"))
+  :preface
+  (declare-function evil-collection-profiler-setup "modes/profiler/evil-collection-profiler")
+  :config
+  (evil-collection-profiler-setup))
+#+end_src
+
 * Email
 * Org
 
