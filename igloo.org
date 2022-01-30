@@ -564,7 +564,14 @@ First, download and compile it. Once it's present on the system, require it. The
   (straight-use-package-mode t))
 #+end_src
 
-Now that the package manager is loaded, start configuring packages.
+*** Silencing the byte compiler
+
+Magit-todos requires =pcre2el=, which lazily defines an advice on =find-tag-regexp= from =etags=, but =etags= is only loaded when requiring =haskell-mode=, which happens after setting up magit, so the definition of =find-tag-regexp= changes after advising it, resulting in the output =ad-handle-definition: ‘find-tag-regexp’ got redefined=. I would prefer a workaround disabling it only for the particular instances, with something like =(let ((ad-redefinition-action 'accept)) (require 'etags))=, but that's not good responsibility assignment practice (some kind of action should be taken by =pcre2el=, not =etags=). The default behavior is to accept the redefinition and emit a message, so the following is not breaking anything, only silencing the output.
+
+#+begin_src emacs-lisp
+(eval-and-compile
+  (setq ad-redefinition-action 'accept))
+#+end_src
 
 *** TODO Managing globally installed packages
 
