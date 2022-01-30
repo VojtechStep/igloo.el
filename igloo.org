@@ -2256,6 +2256,39 @@ TODO: reason about personal choices here
   :straight t)
 #+end_src
 
+** Agda
+
+TODO: document the shit out of this, maybe extract it to a package?
+
+#+begin_src emacs-lisp
+(eval-and-compile
+  (defun igloo--load-agda-mode ()
+    (let ((buffer (current-buffer)))
+      (run-with-timer
+       0 nil
+       (lambda ()
+         (when (buffer-live-p buffer)
+           (let ((agda-mode-file (shell-command-to-string "agda-mode locate")))
+             (when (string-prefix-p "/bin/sh:" agda-mode-file)
+               (error "Agda is not installed in the environment"))
+             (when-let ((existing-path
+                         (condition-case nil
+                             (find-library-name "agda2")
+                           (error nil))))
+               (unless (equal existing-path agda-mode-file)
+                 (error "Another agda mode is loaded in this Emacs instance")))
+             (let ((agda-mode-dir (file-name-directory agda-mode-file)))
+               (cl-pushnew agda-mode-dir load-path :test #'equal)
+               (require 'agda2-mode)
+               (if (fboundp 'agda2-mode)
+                   (agda2-mode)
+                 (error "Agda mode not found")))))))))
+  (cl-pushnew
+   '("\\.l?agda\\'" . igloo--load-agda-mode)
+   auto-mode-alist
+   :test #'equal))
+#+end_src
+
 * Email
 * Org
 
