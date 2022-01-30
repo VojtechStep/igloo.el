@@ -2184,6 +2184,17 @@ TODO: reason about personal choices here
   (flycheck-package-setup))
 #+end_src
 
+** Fish shell
+
+#+begin_src emacs-lisp
+(igloo-use-package fish-mode
+  :straight t
+  :hook
+  ((fish-mode) . apheleia-mode)
+  :init
+  (igloo-link-offset 'fish-indent-offset))
+#+end_src
+
 ** Haskell
 
 #+begin_src emacs-lisp
