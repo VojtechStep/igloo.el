@@ -610,6 +610,8 @@ The list of environment variables is something you probably want to modify for y
      "RUSTUP_HOME"
      "STACK_ROOT"
      "DOCKER_CONFIG"
+     "CABAL_CONFIG"
+     "CABAL_DIR"
      "TERMINFO"
      "SCREENSHOT_DIR"
      "PYTHONSTARTUP"
