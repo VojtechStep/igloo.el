@@ -2184,6 +2184,13 @@ TODO: reason about personal choices here
   (flycheck-package-setup))
 #+end_src
 
+** Racket
+
+#+begin_src emacs-lisp
+(igloo-use-package racket-mode
+  :straight t)
+#+end_src
+
 ** Fish shell
 
 #+begin_src emacs-lisp
