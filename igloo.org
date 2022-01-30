@@ -128,6 +128,7 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
 #+end_src
 - Declare keybindings to package commands in its =igloo-use-package= declaration, via =:general=
 - Outside of =:general= blocks, use the =general-def= macro to define keybindings
+  - This should only be necessary for cases where =evil-collection= overrides some bindings in =:config=, and we need to override them back
 - Use =igloo-leader= for keybindings that should be always available (such as =org-capture= or =consult-buffer=)
 - Use =igloo-local-leader= for keybindings relevant to a specific major /or/ minor mode (such as =consult-outline= or =flycheck-next-error=)
 - Use unquoted state and keymap arguments, without specifying the keywords, like so: =(general-def (motion normal) org-mode ...)=
@@ -1319,8 +1320,6 @@ When projectile looks for files, it correctly detects that I have [[https://gith
 
 ** Installation
 
-There is one deviation from the conventions, and that is putting the keybinding for =igloo-ff-dwim= in the =:config= rather then the =:general= clause. This seems to be required to silence the byte compiler because of some interaction between use-package, general, and the byte compiler itself, because a hypothetically unreachable form =(autoload igloo-ff-dwim "projectile")= is generated, and then the compilation complains that it is declared twice.
-
 #+begin_src emacs-lisp
 (igloo-use-package projectile
   :straight t
@@ -1332,7 +1331,8 @@ There is one deviation from the conventions, and that is putting the keybinding 
     "p" '(nil :wk "projectile")
     "po" '(projectile-switch-project :wk "open project")
     "pka" '(projectile-kill-buffers :wk "close all buffers")
-    "pd" '(projectile-dired :wk "project dired"))
+    "pd" '(projectile-dired :wk "project dired")
+    "f" '(igloo-ff-dwim :wk "files in project" :no-autoload t))
   :preface
   (declare-function projectile-project-p "projectile")
   (declare-function projectile-register-project-type "projectile")
@@ -1343,9 +1343,6 @@ There is one deviation from the conventions, and that is putting the keybinding 
      (if (projectile-project-p)
          #'projectile-find-file
        #'find-file)))
-  :init
-  (igloo-leader
-   "f" #'(igloo-ff-dwim :wk "files in project"))
   :config
   <<projectile-project-types>>
   (projectile-mode))
