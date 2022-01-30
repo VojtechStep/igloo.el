@@ -2379,6 +2379,100 @@ TODO: document the shit out of this, maybe extract it to a package?
 #+end_src
 
 * Email
+
+Produces a warning because of the deprecated package =rfc2368=, fixed in v1.7 ([[https://github.com/djcb/mu/issues/2190][#2190]]).
+
+TODO: docs
+TODO: move personal stuff to room.org
+TODO: split into config + installation
+
+#+begin_src emacs-lisp
+(igloo-use-package mu4e
+  :load-path "/usr/share/emacs/site-lisp/mu4e"
+  :hook
+  ((mu4e-compose-hook) . company-mode)
+  ((mu4e-compose-hook) . flyspell-mode)
+  :custom
+  (mu4e-completing-read-function #'completing-read)
+  (mu4e-get-mail-command "mbsync-par")
+  (mu4e-confirm-quit nil)
+  (mu4e-view-show-images t)
+  (mu4e-view-show-addresses t)
+  (mu4e-context-policy 'pick-first)
+  (mu4e-compose-context-policy 'ask)
+  (mu4e-compose-format-flowed t)
+  (mu4e-change-filenames-when-moving t)
+  (mail-user-agent 'mu4e-user-agent)
+  (message-send-mail-function #'message-send-mail-with-sendmail)
+  (sendmail-program "msmtp")
+  (message-sendmail-f-is-evil t)
+  (message-sendmail-envelope-from 'header)
+  (message-sendmail-extra-arguments '("--read-envelope-from" "--read-recipients"))
+  :general
+  (igloo-leader
+    "am" #'mu4e)
+  :preface
+  (declare-function message-replace-header "message")
+  (declare-function evil-collection-mu4e-setup "modes/mu4e/evil-collection-mu4e")
+  (declare-function evil-collection-inhibit-insert-state "evil-collection")
+  (declare-function message-send-mail-with-sendmail "message")
+  (declare-function mu4e~draft-from-construct "mu4e-draft")
+  (declare-function make-mu4e-context "mu4e-context" t t)
+  (declare-function mu4e-message "mu4e-utils")
+  (defmacro igloo-mu4e-make-context (name email &optional sent drafts trash &rest vars)
+    (let* ((name (eval name))
+          (maildir-prefix (concat "/" name "/"))
+          (sent (or sent "Sent"))
+          (drafts (or drafts "Drafts"))
+          (trash (or trash "Trash")))
+      `(make-mu4e-context
+        :name ,name
+        :enter-func (lambda () (mu4e-message ,(format "Entering %s context" name)))
+        :leave-func (lambda () (mu4e-message ,(format "Leaving %s context" name)))
+        :match-func (igloo--maildir-in ,name)
+        :vars '((user-mail-address . ,email)
+                (mu4e-sent-messages-behavior . delete)
+                (mu4e-sent-folder . ,(concat maildir-prefix sent))
+                (mu4e-drafts-folder . ,(concat maildir-prefix drafts))
+                (mu4e-trash-folder . ,(concat maildir-prefix trash))
+                ,@vars))))
+  (defun igloo--maildir-in (name)
+    (lambda (msg)
+      (when msg
+        (string-match-p
+         (rx bol "/" (literal name) "/")
+         (mu4e-message-field msg :maildir)))))
+  :config
+  (cl-pushnew '("View in browser"
+                . mu4e-action-view-in-browser)
+              mu4e-view-actions
+              :test #'equal)
+  (evil-collection-mu4e-setup)
+  (dolist (s '(mu4e-main-mode-map
+               mu4e-headers-mode-map
+               mu4e-view-mode-map))
+    (evil-collection-inhibit-insert-state s))
+  (general-def 'normal mu4e-main-mode-map
+    "u" nil
+    "gr" '(mu4e-update-mail-and-index :wk "refresh")))
+#+end_src
+
+** HTML composition
+
+#+begin_src emacs-lisp
+(igloo-use-package org-mime
+  :straight t
+  :custom
+  (org-mime-export-options '(:with-toc nil))
+  :general
+  (igloo-local-leader mu4e-compose-mode-map
+    "oe" '(org-mime-edit-mail-in-org-mode :wk "Edit org")
+    "ou" '(org-mime-revert-to-plain-text-mail :wk "Undo htmlize")
+    "oo" '(org-mime-htmlize :wk "Htmlize")))
+(igloo-use-package htmlize
+  :straight t)
+#+end_src
+
 * Org
 
 ** Exports
