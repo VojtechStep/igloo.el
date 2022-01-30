@@ -94,7 +94,7 @@ The =use-package= clauses need to be evaluated at both comptime, to clone and bu
 For this reason, we define a macro to substitute the =(use-package ...)= form with.
 
 #+begin_src emacs-lisp
-(eval-when-compile
+(eval-and-compile
   (defmacro igloo-use-package (&rest body)
     "Passes BODY to `use-package' and call it at comptime and runtime."
     (declare (indent defun))
@@ -149,7 +149,7 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
 - Use =:custom= over =(setq ..)=
 - Put arguments to =:hooks= on a new line and always wrap the triggering hooks in a list
 - When a more thorough documentation of package configuration is necessary, split the section into two headings - Configuration and Installation. Then, set the [[https://orgmode.org/manual/Noweb-Reference-Syntax.html][=noweb-ref=]] header argument in the Configuration section, and put the =igloo-use-package= form in the Installation section, with the proper =<< ... >>= reference.
-- Unless a different default is required, set language-specific =-offset= variables (the ones that handle tab width) to =tab-width=
+- Unless a different default is required, set language-specific =-offset= variables (the ones that handle tab width) to =tab-width= (using the =igloo-link-offset= macro in the =:init= block)
 
 I was torn between specifying the keybindings in the same place as the package or in a separate Keybindings section, which is what I was using in my previous config.
 
@@ -459,7 +459,9 @@ We also disable the blinking cursor, because who came up with that?
        '((vertical-scroll-bars . nil)
          (horizontal-scroll-bars . nil)
          (font . "JetBrains Mono") ;(ref:default-font)
-         (background-color . "#1d1f21")) ;(ref:frame-bg)
+         (background-color . "#1d1f21") ;(ref:frame-bg)
+         (background-mode . dark)
+         (mouse-color . "#cc6666"))
        default-frame-alist))
 
 (set-face-attribute 'default nil :height 130)
@@ -1273,6 +1275,7 @@ As for the configuration, I bind some keys to actions I use often, and I make co
   (xref-show-xrefs-function #'consult-xref)
   (xref-show-definitions-function #'consult-xref)
   (consult-project-root-function #'projectile-project-root)
+  (consult-narrow-key (kbd "C-n"))
   :general
   ((motion insert) override
     "C-f" #'consult-ripgrep)
@@ -1330,6 +1333,7 @@ When projectile looks for files, it correctly detects that I have [[https://gith
   (igloo-leader
     "p" '(nil :wk "projectile")
     "po" '(projectile-switch-project :wk "open project")
+    "pa" '(projectile-commander :wk "project menu")
     "pka" '(projectile-kill-buffers :wk "close all buffers")
     "pd" '(projectile-dired :wk "project dired")
     "f" '(igloo-ff-dwim :wk "files in project" :no-autoload t))
@@ -1504,7 +1508,7 @@ The state is shown in the modeline, no need to echo it.
 
 ** Installation
 
-Evil is one of the few packages that loads eagerly. It also contributes ~30% to the startup time, so it might be worth investigating how to make it load faster.
+Evil is one of the few packages that loads eagerly. It also contributes ~30% to the startup time, so it might be worth investigating how to make it load faster (maybe look into [[https://github.com/noctuid/general.el/issues/180][possible interaction with general]]?).
 
 #+begin_src emacs-lisp
 (eval-when-compile (defvar evil-want-keybinding nil))
