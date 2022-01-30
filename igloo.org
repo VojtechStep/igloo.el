@@ -2083,6 +2083,28 @@ Often times, when trying to profile a performance bottleneck, selecting the comm
 
 TODO: docs
 
+** Error reporting
+
+#+begin_src emacs-lisp
+(igloo-use-package flycheck
+  :straight t
+  :hook
+  ((prog-mode) . flycheck-mode)
+  :custom
+  (flycheck-display-errors-delay 0.5)
+  (flycheck-emacs-lisp-initialize-packages nil)
+  :preface
+  (declare-function evil-collection-flycheck-setup "modes/flycheck/evil-collection-flycheck")
+  (defun igloo--ignore-eldoc-when-flycheck (&rest _)
+    (not (and (fboundp 'flycheck-overlay-errors-at)
+              (flycheck-overlay-errors-at (point)))))
+  :config
+  (advice-add #'eldoc-display-message-no-interference-p
+              :after-while
+              #'igloo--ignore-eldoc-when-flycheck)
+  (evil-collection-flycheck-setup))
+#+end_src
+
 ** Code formatting
 
 #+begin_src emacs-lisp
@@ -2098,6 +2120,51 @@ TODO: brag
     :straight (:host github
                :repo "VojtechStep/apheleia-use-package.el")
     :demand t))
+#+end_src
+
+** Auto complete
+
+TODO: docs
+
+#+begin_src emacs-lisp
+(igloo-use-package company
+  :straight t
+  :custom
+  (company-idle-delay 0)
+  (company-selection-wrap-around t)
+  :general
+  (company-active-map
+    "C-j" #'company-select-next
+    "C-k" #'company-select-previous
+    "C-w" nil)
+  (insert company-mode
+    :definer 'minor-mode
+    "C-SPC" #'company-complete))
+#+end_src
+
+** LSP
+
+TODO: reason about personal choices here
+
+#+begin_src emacs-lisp
+(igloo-use-package lsp-mode
+  :straight t
+  :commands lsp
+  :custom
+  (lsp-enable-snippet nil)
+  (lsp-enable-semantic-highlighting t)
+  (lsp-enable-symbol-highlighting nil)
+  (lsp-completion-provider :capf)
+  (lsp-keep-workspace-alive nil)
+  :general
+  (normal lsp-mode
+    :definer 'minor-mode
+    "gh" (lambda () (interactive) (lsp-hover)))
+  (visual lsp-mode
+    :definer 'minor-mode
+    "C-j" '(lsp-extend-selection :wk "Extend selection"))
+  :preface
+  (declare-function lsp-hover "lsp-mode"))
 #+end_src
 
 * Email
