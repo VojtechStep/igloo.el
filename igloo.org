@@ -1270,7 +1270,7 @@ As for the configuration, I bind some keys to actions I use often, and I make co
 (igloo-use-package consult
   :straight t
   :custom
-  (xref-show-xref-function #'consult-xref)
+  (xref-show-xrefs-function #'consult-xref)
   (xref-show-definitions-function #'consult-xref)
   (consult-project-root-function #'projectile-project-root)
   :general
