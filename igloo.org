@@ -2749,7 +2749,40 @@ SCHEDULED: %t")
   (setq-mode-local tex-mode tex-start-commands nil))
 #+end_src
 
+* Document reading
+
+** PDF
+
+TODO: =pdf-annot-list-mode-map=
 #+begin_src emacs-lisp
+(igloo-use-package pdf-tools
+  :straight (:fork (:repo "vedang/pdf-tools"))
+  :mode ("\\.pdf\\'" . pdf-view-mode)
+  :commands pdf-view-mode
+  :hook
+  ((pdf-view-mode) . auto-revert-mode)
+  ((pdf-view-mode) . pdf-isearch-minor-mode)
+  :custom
+  (pdf-links-read-link-convert-commands
+   '("-font" "JetBrains-Mono-Regular"
+     "-pointsize" "%P"
+     "-undercolor" "%f"
+     "-fill" "%b"
+     "-draw" "text %X,%Y '%c'"))
+  (pdf-annot-list-display-buffer-action
+   '((display-buffer-reuse-window display-buffer-pop-up-frame)
+     (inhibit-same-window . t)
+     (reusable-frames . t)))
+  :general
+  (visual pdf-view-mode-map
+    "<down-mouse-1>" #'pdf-view-mouse-set-region)
+  (normal pdf-view-mode-map
+    "r" #'image-rotate)
+  :preface
+  (declare-function evil-collection-pdf-setup "modes/pdf/evil-collection-pdf")
+  :config
+  (setq-mode-local pdf-view-mode auto-revert-verbose nil)
+  (evil-collection-pdf-setup))
 #+end_src
 
 * RSS Feed
