@@ -1432,8 +1432,9 @@ I would also prefer it to be inside a use-package form, but I'm pretty sure that
   (interactive)
   (let ((hex (read-from-minibuffer "" nil igloo--input-unicode-map)))
     (self-insert-command 1 (string-to-number hex 16))))
-(general-def insert override
-  "C-S-u" #'igloo-input-unicode)
+(with-eval-after-load 'general
+  (general-def insert override
+    "C-S-u" #'igloo-input-unicode))
 #+end_src
 
 ** Japanese
@@ -3007,6 +3008,21 @@ Putting it all together - helper functions go into =:preface=, special keymap de
   :config
   <<shr-local-href-keymap>>
   (advice-add #'shr-put-image :around #'igloo--shr-put-image-always-slice))
+#+end_src
+
+* Utilities
+
+#+begin_src emacs-lisp
+(defun igloo-yt (url)
+  (interactive (list (read-string "URL: ")))
+  (let ((yt-url (replace-regexp-in-string
+                 (rx "//" (* (not "/")) "/")
+                 "//www.youtube.com/"
+                 url)))
+    (start-process "yt" nil "mpv" yt-url)))
+(with-eval-after-load 'general
+  (igloo-leader
+    "ay" '(igloo-yt :wk "youtube")))
 #+end_src
 
 * Footer
