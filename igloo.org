@@ -2475,16 +2475,270 @@ TODO: split into config + installation
 
 * Org
 
+TODO: document all of this
+TODO: split into more sections
+
+#+begin_src emacs-lisp
+(igloo-use-package org
+  :straight (:type built-in)
+  :hook
+  ((org-mode) . visual-line-mode)
+  ((org-mode) . org-indent-mode)
+  ((org-mode) . flyspell-mode)
+  :custom
+  (org-highlight-latex-and-related '(native entities))
+  (org-catch-invisible-edits 'smart)
+  (org-log-done 'time)
+  (org-special-ctrl-a/e t) ; bol/eol ignore stars, tags, ...
+  (org-directory "~/Org/")
+  (org-agenda-files
+   (directory-files-recursively org-directory "\\`[^.].*\\.org\\'"))
+  (org-use-fast-todo-selection 'expert)
+  (org-todo-keywords
+   '((sequence "TODO(t)" "WAITING(w@)" "|" "DONE(d)" "CANCELLED(c)")))
+  (org-use-tag-inheritance nil)
+  (org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)
+     (shell . t)))
+  (org-structure-template-alist
+   '(("c" . "comment")
+     ("d" . "definition")
+     ("e" . "example")
+     ("E" . "export")
+     ("l" . "export latex")
+     ("p" . "proof")
+     ("s" . "src")))
+   (org-preview-latex-default-process 'imagemagick)
+   (org-preview-latex-process-alist
+    '((imagemagick :programs
+                   ("tectonic" "convert")
+                   :description
+                   "pdf > png"
+                   :message "You done now"
+                   :image-input-type "pdf"
+                   :image-output-type "png"
+                   :image-size-adjust (1.0 . 1.0)
+                   :latex-compiler
+                   ("tectonic -o %o %f")
+                   :image-converter
+                   ("convert -density %D -trim -antialias %f -quality 100 %O"))))
+  :general
+  (igloo-leader
+    "oc" '(org-capture :wk "capture")
+    "oa" '(igloo-org-agenda :wk "agenda" :no-autoload t)
+    "of" '(igloo-open-agenda-file :wk "agenda files" :no-autoload t))
+  (igloo-local-leader org-mode-map
+    "g" '(consult-org-heading :wk "go to heading" :jump t))
+  :preface
+  (declare-function org-agenda-files "org")
+  (defvar org-agenda-tag-filter-preset nil)
+  (defun igloo-org-agenda ()
+    (interactive)
+    (require 'org-agenda)
+    (let ((org-agenda-tag-filter-preset '("-drill")))
+      (call-interactively #'org-agenda)))
+  (defun igloo-open-agenda-file ()
+    (interactive)
+    (require 'org-agenda)
+    (find-file (expand-file-name
+                (completing-read "Open agenda file: "
+                                 (org-agenda-files))))))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package ox-latex
+  :after org
+  :custom
+  (org-latex-pdf-process '("tectonic %f"))
+  (org-preview-latex-default-process 'imagemagick)
+  :preface
+  (defun igloo-org-normalize-relative-packages (header)
+    (replace-regexp-in-string
+     (rx bol
+         (group
+          "\\usepackage"
+          (? "[" (*? anychar) "]"))
+         "{./" (group (*? anychar)) "}" eol)
+     (lambda (match)
+       (let ((opts (match-string 1 match))
+             (pkg (match-string 2 match)))
+         (concat opts "{" (expand-file-name pkg default-directory) "}")))
+     header 'fixedcase 'literal))
+  :init
+  (put 'org-latex-classes 'safe-local-variable (lambda (_) t))
+  :config
+  (advice-add 'org-latex-make-preamble :filter-return
+              #'igloo-org-normalize-relative-packages))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-src
+  :after org
+  :hook
+  ((org-src-mode) . (lambda ()
+                      (when (boundp 'flycheck-disabled-checkers)
+                        (cl-pushnew 'emacs-lisp-checkdoc flycheck-disabled-checkers))))
+  :custom
+  (org-edit-src-content-indentation 0)
+  (org-src-window-setup 'other-frame)
+  :general
+  ((motion insert) org-src-mode-map
+    [remap evil-write] #'org-edit-src-save))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-faces
+  :after org
+  :custom
+  (org-todo-keyword-faces
+   '(("WAITING" . (:foreground "black" :background "white"))
+     ("CANCELLED" . "#fff"))))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-agenda
+  :after org
+  :custom
+  (org-agenda-window-setup 'other-frame)
+  (org-agenda-skip-scheduled-if-done t)
+  (org-agenda-skip-deadline-if-done t))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-clock
+  :after org
+  :custom
+  (org-clock-x11idle-program-name "x11idle")
+  (org-clock-persist 'history)
+  :config
+  (org-clock-persistence-insinuate))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-refile
+  :after org
+  :custom
+  (org-outline-path-complete-in-steps nil)
+  (org-refile-targets '((org-agenda-files :maxlevel . 3)))
+  (org-refile-use-outline-path 'file))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-capture
+  :after org
+  :hook
+  ((org-capture-mode) . evil-insert-state)
+  :custom
+  (org-capture-templates nil)
+  :config
+  (let ((todofile "TODO.org")
+        (taskfile "Tasks.org")
+        (learnfile "Learn.org")
+        (vocabfile "Vocabulary.org")
+        (journalfile "Diary.org"))
+    (dolist (tpl `(("e" "Emacs todo" entry
+                    (file+olp ,todofile "Emacs")
+                    "** TODO %?")
+                   ("s" "System todo" entry
+                    (file+olp ,todofile "System")
+                    "** TODO %?")
+                   ("l" "Learn stuff" entry
+                    (file ,learnfile)
+                    "* LEARN %?"
+                    :empty-lines 1)
+                   ("v" "Vocabulary" entry
+                    (file+olp+datetree ,vocabfile)
+                    "* %^{Vocab} :drill:
+Reading: [%^{Reading}]
+Meaning: [%^{Meaning}]
+Kanji: [%^{Kanji}]")
+                   ("t" "Task" entry
+                    (file+olp+datetree ,taskfile)
+                    "* TODO %?
+SCHEDULED: %t")
+                   ("d" "Diary" plain
+                    (file+olp+datetree ,journalfile)
+                    "%?")))
+      (cl-pushnew tpl org-capture-templates :test #'equal))))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-attach
+  :after org
+  :demand
+  :custom
+  (org-attach-use-inheritance t))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package evil-org
+  :after org
+  :straight t
+  :hook
+  ((org-mode) . evil-org-mode)
+  :custom
+  (evil-org-key-theme '(navigation insert return additional todo))
+  (evil-org-use-additional-insert t)
+  :preface
+  (declare-function evil-org-set-key-theme "evil-org")
+  :config
+  (evil-org-set-key-theme))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package evil-org-agenda
+  :after org-agenda
+  :demand
+  :hook
+  ((org-agenda-mode) . evil-org-agenda-set-keys))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-pomodoro
+  :straight t
+  :custom
+  (org-pomodoro-play-sounds nil)
+  (org-pomodoro-manual-break t)
+  :general
+  (igloo-leader
+    "op" #'org-pomodoro))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-drill
+  :straight (:protocol https)
+  :hook
+  ((org-drill-response-mode) . (lambda ()
+                                 (igloo-scaled-cjk-chars -1)
+                                 (text-scale-set 6)))
+  :custom
+  (org-drill-learn-fraction 0.01)
+  (org-drill-scope 'agenda)
+  :preface
+  (defun igloo-org-drill-cram-tree ()
+    "Cram all items in the subtree."
+    (interactive)
+    (let ((org-drill-scope 'tree)
+          (org-drill-cram-hours 0)
+          org-drill-maximum-items-per-session)
+      (org-drill-cram))))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-sticky-header
+  :straight t
+  :hook
+  ((org-mode) . org-sticky-header-mode)
+  :custom
+  (org-sticky-header-full-path 'full))
+#+end_src
+
 ** Exports
 
 ** Code blocks
 
 #+begin_src emacs-lisp
-(add-hook
- 'org-src-mode-hook
- (lambda ()
-   (when (fboundp 'flycheck-disable-checker)
-     (flycheck-disable-checker 'emacs-lisp-checkdoc))))
 #+end_src
 
 * RSS Feed
