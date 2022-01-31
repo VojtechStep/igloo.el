@@ -2738,6 +2738,17 @@ SCHEDULED: %t")
 
 ** Code blocks
 
+** Tex
+
+#+begin_src emacs-lisp
+(igloo-use-package tex-mode
+  :custom
+  (tex-command "tectonic")
+  (latex-run-command "tectonic")
+  :config
+  (setq-mode-local tex-mode tex-start-commands nil))
+#+end_src
+
 #+begin_src emacs-lisp
 #+end_src
 
