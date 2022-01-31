@@ -2810,10 +2810,14 @@ Also, elfeed puts its database into =~/.elfeed= by default, which is just not ri
   (declare-function evil-collection-elfeed-setup "modes/elfeed/evil-collection-elfeed")
   (declare-function elfeed-tag-1 "elfeed-db")
   <<elfeed-ignore-funs>>
+  <<elfeed-parse-funs>>
   :init
   (add-hook 'elfeed-new-entry-hook #'igloo--elfeed-retag-junk)
+  (add-hook 'elfeed-new-entry-parse-hook #'igloo--elfeed-parse-media)
   :config
-  (evil-collection-elfeed-setup))
+  (evil-collection-elfeed-setup)
+  (general-def 'normal elfeed-search-mode-map
+    "gr" '(elfeed-search-fetch :wk "refresh")))
 #+end_src
 
 ** Ignoring entries
@@ -2842,6 +2846,27 @@ These are helpers for hiding some entries depending on their tags - instead of t
     (when (cl-loop for p in ignored
                    thereis (igloo--elfeed-matches-ignore categories p))
       (elfeed-tag-1 entry 'junk))))
+#+end_src
+
+** YouTube parsing
+
+TODO: docs on why (write a proper rant)
+
+TLDR: youtube uses an abandoned unsupported format, need to reparse
+
+#+begin_src emacs-lisp :noweb-ref elfeed-parse-funs :tangle no
+(defun igloo--elfeed-parse-media (type xml-entry db-entry)
+  (when (and (eq type :atom)
+             (memq 'youtube (elfeed-entry-tags db-entry)))
+    (let* ((thumbnail (cadr (xml-query* (group thumbnail) xml-entry)))
+           (thumb-url (alist-get 'url thumbnail))
+           (width (alist-get 'width thumbnail))
+           (height (alist-get 'height thumbnail))
+           (link (elfeed-entry-link db-entry))
+           (description (xml-query* (group description *) xml-entry))
+           (content-html (format "<div><a href=\"%s\"><img src=\"%s\" width=%s height=%s/></a><p style=\"white-space:pre-wrap;\">%s</p></div>" link thumb-url width height (string-replace "\n" "<br>" description))))
+      (setf (elfeed-entry-content db-entry) content-html)
+      (setf (elfeed-entry-content-type db-entry) 'html))))
 #+end_src
 
 ** Simple HTML Renderer
