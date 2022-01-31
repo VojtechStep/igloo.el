@@ -578,6 +578,8 @@ Magit-todos requires =pcre2el=, which lazily defines an advice on =find-tag-rege
 
 I still haven't figured out how to make straight cooperate properly with local non-vcs directories. For example, mu4e and mozc require other system components, like native binaries, to be built, so they are often included in the distro's package manager. It would be nice if one didn't have to have two copies of the repo on the disk - one from the system package manager and one from straight. I use =:load-path= for those packages for now, but I loose on the nice automatic builds and such.
 
+TODO: don't assume FHS everywhere
+
 ** Execution environment
 
 I struggled a little with figuring out how to keep the environment variables used in Emacs the same as in the rest of the system. I even wrote a script that was valid fish and elisp at the same time! [[https://github.com/VojtechStep/configs/blob/b416fc4b2236374c2f88f601a076736a57b2700b/envs.el][Check it out]]!
@@ -1213,10 +1215,11 @@ than the surrounding text."
 
 #+begin_src emacs-lisp
 (igloo-run-with-frontend
-  <<setup-emoji>>
-  <<setup-symbols>>
-  <<setup-ligatures>>
-  (igloo-scaled-cjk-chars))
+ (when (display-multi-frame-p)
+   <<setup-emoji>>
+   <<setup-symbols>>
+   <<setup-ligatures>>
+   (igloo-scaled-cjk-chars)))
 #+end_src
 
 ** Modeline
@@ -1445,6 +1448,7 @@ One needs to install the mozc server and Emacs helper independently of the exten
 
 #+begin_src emacs-lisp
 (igloo-use-package mozc
+  :if (file-exists-p "/usr/share/emacs/site-lisp/mozc")
   :load-path "/usr/share/emacs/site-lisp/mozc"
   :custom
   (mozc-candidate-style 'echo-area)
@@ -2377,6 +2381,14 @@ TODO: document the shit out of this, maybe extract it to a package?
               :repo "museoa/bqn-mode")
   :hook
   ((bqn-mode) . (lambda () (set-input-method "BQN-Z"))))
+#+end_src
+
+* Web
+
+#+begin_src emacs-lisp
+(igloo-use-package browse-url
+  :custom
+  (browse-url-browser-function #'browse-url-xdg-open))
 #+end_src
 
 * Email
