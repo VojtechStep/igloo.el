@@ -2,10 +2,16 @@ EMACS=emacs
 PREFIX:=build
 DESTDIR:=$(abspath $(PREFIX)/emacs)
 DEBUG=
+DEBUG_HARD=
 USE_PACKAGE_DEBUG=nil
+LOAD_DEBUG=nil
 
 ifeq ("$(DEBUG)","1")
 USE_PACKAGE_DEBUG='debug
+endif
+
+ifeq ("$(DEBUG_HARD)","1")
+LOAD_DEBUG='debug
 endif
 
 PERSONAL:=room.org
@@ -66,6 +72,7 @@ $(TANGLE): $(SRC)
 	  (setq user-init-file (locate-user-emacs-file \"init.el\")) \
 	  (setq early-init-file (locate-user-emacs-file \"early-init.el\")) \
 	  (defvar use-package-verbose $(USE_PACKAGE_DEBUG)) \
+	  (setq force-load-messages $(LOAD_DEBUG)) \
 	  (byte-compile-file \"$?\"))"
 
 lint: $(TANGLE)
