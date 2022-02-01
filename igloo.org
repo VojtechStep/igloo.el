@@ -1418,6 +1418,7 @@ projectile already comes with many project types predefined, but Zig projects ar
   :custom
   (direnv-always-show-summary nil)
   :config
+  (add-to-list 'warning-suppress-types '(direnv))
   (direnv-mode))
 #+end_src
 
