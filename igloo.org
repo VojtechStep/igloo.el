@@ -1300,6 +1300,8 @@ Remember a few paragraphs above, when I complained about Helm being bloated with
 
 As for the configuration, I bind some keys to actions I use often, and I make consult use projectile's project discovery to correctly search the entire project, not only the =default-directory= of the open buffer.
 
+The evil integration bit marks some of consult's commands as "jumping", so that when invoked, they push to evil's jump list.
+
 #+begin_src emacs-lisp
 (igloo-use-package consult
   :straight t
@@ -1314,9 +1316,13 @@ As for the configuration, I bind some keys to actions I use often, and I make co
   (igloo-leader
     "gg" '(consult-buffer :wk "switch to buffer"))
   (igloo-local-leader-with-minor outline
-    "g" '(consult-outline :wk "go to heading" :jump t))
+    "g" '(consult-outline :wk "go to heading"))
   :preface
-  (declare-function projectile-project-root "projectile"))
+  (declare-function projectile-project-root "projectile")
+  (declare-function evil-collection-consult-setup "modes/consult/evil-collection-consult")
+  :config
+  (with-eval-after-load 'evil-collection
+    (evil-collection-consult-setup)))
 #+end_src
 
 * Project management
@@ -2542,7 +2548,7 @@ TODO: split into more sections
     "oa" '(igloo-org-agenda :wk "agenda" :no-autoload t)
     "of" '(igloo-open-agenda-file :wk "agenda files" :no-autoload t))
   (igloo-local-leader org-mode-map
-    "g" '(consult-org-heading :wk "go to heading" :jump t))
+    "g" '(consult-org-heading :wk "go to heading"))
   :preface
   (declare-function org-agenda-files "org")
   (defvar org-agenda-tag-filter-preset nil)
