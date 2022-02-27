@@ -1411,6 +1411,10 @@ projectile already comes with many project types predefined, but Zig projects ar
 
 [[https://direnv.net/][direnv]] is in concept similar to Emacs' dirlocals, except instead of setting buffer-local variables, it sets environment variables, and it's not Emacs specific - you can hook it up to your terminal, so that the environment changes when you =cd= into it. It's super handy when working with things like nix-shell or (heaven forbid) Python virtualenvs.
 
+By default, when you open a buffer which belong to a direnv-enabled folder, but the environment is disabled, direnv pops up a warning. Since that is quite annoying, I choose to suppress these warnings.
+
+The advice fixes a race condition where LSP attempts to start before direnv updates the environment, leading to LSP not recognizing the correct server path.
+
 #+begin_src emacs-lisp
 (igloo-use-package direnv
   :straight t
@@ -1419,6 +1423,7 @@ projectile already comes with many project types predefined, but Zig projects ar
   (direnv-always-show-summary nil)
   :config
   (add-to-list 'warning-suppress-types '(direnv))
+  (advice-add 'lsp :before #'direnv-update-environment)
   (direnv-mode))
 #+end_src
 
