@@ -2189,13 +2189,13 @@ TODO: reason about personal choices here
 
 ** Fish shell
 
+Fish keeps its tab-width, since the default in the built-in =fish_indent= command is not configurable.
+
 #+begin_src emacs-lisp
 (igloo-use-package fish-mode
   :straight t
   :hook
-  ((fish-mode) . apheleia-mode)
-  :init
-  (igloo-link-offset 'fish-indent-offset))
+  ((fish-mode) . apheleia-mode))
 #+end_src
 
 ** Haskell
