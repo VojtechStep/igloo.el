@@ -794,7 +794,9 @@ This adds VIM-like (read: correct) scrolling behavior: only scroll one line at a
 #+begin_src emacs-lisp
 (setq-default scroll-step 1
               scroll-margin 3
-              scroll-conservatively 101)
+              scroll-conservatively 101
+              hscroll-step 1
+              hscroll-margin 3)
 #+end_src
 
 There is no yes/no question important enough to require up to three key presses more then necessary, so make all yes/no prompts into y/n prompts.
