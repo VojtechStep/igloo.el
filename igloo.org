@@ -2770,6 +2770,7 @@ TODO: =pdf-annot-list-mode-map=
   :hook
   ((pdf-view-mode) . auto-revert-mode)
   ((pdf-view-mode) . pdf-isearch-minor-mode)
+  ((pdf-view-mode) . pdf-history-minor-mode)
   :custom
   (pdf-links-read-link-convert-commands
    '("-font" "JetBrains-Mono-Regular"
@@ -2785,7 +2786,9 @@ TODO: =pdf-annot-list-mode-map=
   (visual pdf-view-mode-map
     "<down-mouse-1>" #'pdf-view-mouse-set-region)
   (normal pdf-view-mode-map
-    "r" #'image-rotate)
+    "r" #'image-rotate
+    [remap evil-jump-forward] #'pdf-history-forward
+    [remap evil-jump-backward] #'pdf-history-backward)
   :preface
   (declare-function evil-collection-pdf-setup "modes/pdf/evil-collection-pdf")
   :config
