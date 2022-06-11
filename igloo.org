@@ -2142,8 +2142,10 @@ TODO: docs
   :custom
   (flycheck-display-errors-delay 0.5)
   (flycheck-emacs-lisp-initialize-packages nil)
+  (flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
   :preface
   (declare-function evil-collection-flycheck-setup "modes/flycheck/evil-collection-flycheck")
+  (declare-function flycheck-display-error-messages-unless-error-list "flycheck")
   (defun igloo--ignore-eldoc-when-flycheck (&rest _)
     (not (and (fboundp 'flycheck-overlay-errors-at)
               (flycheck-overlay-errors-at (point)))))
