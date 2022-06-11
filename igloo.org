@@ -1860,9 +1860,10 @@ TODO: docs
 
 #+begin_src emacs-lisp :noweb-ref eshell-prompt :tangle no
 (eval-when-compile
-  (defmacro igloo--eshell-segment (form fg &optional bg &rest props)
+  (defmacro igloo--eshell-segment (form &optional fg bg &rest props)
     (declare (indent defun))
-    (unless bg (setq bg ''term-color-black))
+    (unless bg (setq bg ''term))
+    (unless fg (setq fg ''term))
     (list 'propertize
           form
           ''face
@@ -1877,10 +1878,7 @@ TODO: docs
   (concat
    (igloo--eshell-segment (user-login-name)
      'term-color-green)
-   (igloo--eshell-segment "@"
-     'term-color-white)
-   (igloo--eshell-segment (system-name)
-     'term-color-white)
+   (igloo--eshell-segment (concat "@" (system-name)))
    " "
    (igloo--eshell-segment
      (igloo-fishy-abbrev (abbreviate-file-name (eshell/pwd)))
@@ -1888,18 +1886,14 @@ TODO: docs
    (when-let ((branch (and (fboundp 'magit-get-current-branch)
                            (magit-get-current-branch))))
      (igloo--eshell-segment
-       (concat " ("
-               branch
-               ")")
-       'term-color-white))
+       (concat " (" branch ")")))
    (when (not (eq 0 eshell-last-command-status))
      (igloo--eshell-segment
       (concat " ["
               (number-to-string eshell-last-command-status)
               "]")
       'term-color-red))
-   (igloo--eshell-segment "> "
-     'term-color-white)))
+   (igloo--eshell-segment "> ")))
 #+end_src
 
 #+begin_src emacs-lisp :noweb-ref eshell-prompt :tangle no
