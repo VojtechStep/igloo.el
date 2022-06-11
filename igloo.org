@@ -2320,7 +2320,7 @@ TODO: document the shit out of this, maybe extract it to a package?
   ((c-mode-common) . apheleia-mode)
   ((c-mode-common) . lsp-deferred)
   :apheleia
-  (clang-format . ("clang-format" "--assume-filename" file))
+  (clang-format . ("clang-format" "--assume-filename" filepath))
   c-mode c++-mode java-mode)
 #+end_src
 
