@@ -2212,14 +2212,15 @@ Fish keeps its tab-width, since the default in the built-in =fish_indent= comman
 (igloo-use-package haskell-mode
   :straight t
   :hook
-  ((haskell-mode) . lsp-deferred))
+  ((haskell-mode) . lsp-deferred)
+  ((haskell-mode) . interactive-haskell-mode))
 #+end_src
 
 #+begin_src emacs-lisp
 (igloo-use-package lsp-haskell
   :straight t
   :custom
-  (lsp-haskell-formatting-provider "stylish-haskell"))
+  (lsp-haskell-formatting-provider "brittany"))
 #+end_src
 
 ** Nix
