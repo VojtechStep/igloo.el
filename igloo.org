@@ -1572,6 +1572,66 @@ The state is shown in the modeline, no need to echo it.
 (evil-echo-state nil)
 #+end_src
 
+** Keybindings
+:PROPERTIES:
+:header-args: :tangle no :noweb-ref evil-bindings
+:END:
+
+Window movement
+
+#+begin_src emacs-lisp
+(:keymaps 'override ; See exception under Conventions
+  (igloo-lcag "h") #'evil-window-left
+  (igloo-lcag "j") #'evil-window-down
+  (igloo-lcag "k") #'evil-window-up
+  (igloo-lcag "l") #'evil-window-right
+  (igloo-lcag "S-h") #'evil-window-move-far-left
+  (igloo-lcag "S-j") #'evil-window-move-very-bottom
+  (igloo-lcag "S-k") #'evil-window-move-very-top
+  (igloo-lcag "S-l") #'evil-window-move-far-right)
+#+end_src
+
+General movement
+
+#+begin_src emacs-lisp
+(motion global
+  "j" #'evil-next-visual-line
+  "k" #'evil-previous-visual-line
+  "L" #'evil-end-of-line-or-visual-line
+  "H" #'evil-first-non-blank-of-visual-line)
+#+end_src
+
+Misc
+#+begin_src emacs-lisp
+(motion global
+  ";" #'evil-ex
+  "," #'evil-repeat-find-char)
+#+end_src
+
+Macros are annoying
+
+#+begin_src emacs-lisp
+(normal global
+  "q" nil
+  "C-q" #'evil-record-macro)
+#+end_src
+
+Insert bindings in minibuffer
+
+#+begin_src emacs-lisp
+(minibuffer-local-map
+  "C-v" #'yank
+  "C-w" #'evil-delete-backward-word)
+#+end_src
+
+Igloo bindings
+
+#+begin_src emacs-lisp
+(igloo-leader
+  "SPC" #'evil-switch-to-windows-last-buffer
+  "gn" '(evil-buffer-new :wk "open new buffer"))
+#+end_src
+
 ** Installation
 
 Evil is one of the few packages that loads eagerly. It also contributes ~30% to the startup time, so it might be worth investigating how to make it load faster (maybe look into [[https://github.com/noctuid/general.el/issues/180][possible interaction with general]]?).
@@ -1585,27 +1645,7 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
   <<evil-config>>
   (evil-lookup-func #'helpful-at-point)
   :general
-  (:keymaps 'override ; See exception under Conventions
-    (igloo-lcag "h") #'evil-window-left
-    (igloo-lcag "j") #'evil-window-down
-    (igloo-lcag "k") #'evil-window-up
-    (igloo-lcag "l") #'evil-window-right
-    (igloo-lcag "S-h") #'evil-window-move-far-left
-    (igloo-lcag "S-j") #'evil-window-move-very-bottom
-    (igloo-lcag "S-k") #'evil-window-move-very-top
-    (igloo-lcag "S-l") #'evil-window-move-far-right)
-  (motion global
-    "j" #'evil-next-visual-line
-    "k" #'evil-previous-visual-line
-    "L" #'evil-end-of-line-or-visual-line
-    "H" #'evil-first-non-blank-of-visual-line
-    ";" #'evil-ex)
-  (minibuffer-local-map
-    "C-v" #'yank
-    "C-w" #'evil-delete-backward-word)
-  (igloo-leader
-    "SPC" #'evil-switch-to-windows-last-buffer
-    "gn" '(evil-buffer-new :wk "open new buffer"))
+  <<evil-bindings>>
   :preface
   (declare-function evil-repeat-type "evil-repeat")
   (declare-function evil-normalize-keymaps "evil-core")
