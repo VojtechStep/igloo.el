@@ -1223,9 +1223,13 @@ than the surrounding text."
 
 *** Loading with frontend
 
+The above code gets run when the first frame is created, but we also want to account for environments that don't have a graphical display - for example, I managed to setup Emacs with this config on my phone via Termux, which only provides a terminal interface. In those kinds of environments, Emacs throws an error because some variables and functions are not defined.
+
+To prevent a crash, we only mess with the fonts on displays that can render multiple fonts.
+
 #+begin_src emacs-lisp
 (igloo-run-with-frontend
- (when (display-multi-frame-p)
+ (when (display-multi-font-p)
    <<setup-emoji>>
    <<setup-symbols>>
    <<setup-ligatures>>
