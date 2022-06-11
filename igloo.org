@@ -932,7 +932,13 @@ I do love myself a dark theme. I go with [[https://github.com/purcell/color-them
   :straight t
   :demand
   :config
-  (load-theme 'sanityinc-tomorrow-night t))
+  (load-theme 'sanityinc-tomorrow-night t)
+  (custom-theme-set-faces
+   'sanityinc-tomorrow-night
+   '(diff-removed ((t (:background "#3F0001"))))
+   '(diff-refine-removed ((t (:background "#9b1011"))))
+   '(diff-added ((t (:background "#002800"))))
+   '(diff-refine-added ((t (:background "#006000"))))))
 #+end_src
 
 Don't show a help message in every new frame.
@@ -2240,7 +2246,8 @@ Fish keeps its tab-width, since the default in the built-in =fish_indent= comman
   (proof-splash-enable nil)
   (proof-follow-mode 'followdown)
   (coq-compile-before-require t)
-  (proof-three-window-enable t)
+  (coq-diffs 'removed)
+  (proof-multiple-frames-enable t)
   :general
   ((insert motion) coq-mode-map
     "C-j" #'proof-assert-next-command-interactive
