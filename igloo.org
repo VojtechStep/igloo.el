@@ -1472,6 +1472,8 @@ I'm learning Japanese, so sometimes I need to input Japanese text. I tried [[htt
 
 One needs to install the mozc server and Emacs helper independently of the extension. I use a customized version of [[https://aur.archlinux.org/packages/mozc-ut-common/][mozc-ut-common]], which builds the server, the Emacs helper, copies the mozc.el package to =/usr/share/emacs/site-lisp/mozc/mozc.el=, byte compiles it, generates autoloads, and doesn't depend on Qt. The PKGBUILD can be found [[file:extras/mozc-ut-common/PKGBUILD][here]].
 
+The =use-package= declaration then loads the autoloads, and tries to JIT the code when it is used (this would normally be handled by straight.el, but this package is installed via the system package manager).
+
 #+begin_src emacs-lisp
 (igloo-use-package mozc
   :if (file-exists-p "/usr/share/emacs/site-lisp/mozc")
