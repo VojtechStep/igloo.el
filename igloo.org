@@ -1857,8 +1857,11 @@ TODO: docs
 ** Eshell
 
 *** Prompt
+:PROPERTIES:
+:header-args: :tangle no :noweb-ref eshell-prompt
+:END:
 
-#+begin_src emacs-lisp :noweb-ref eshell-prompt :tangle no
+#+begin_src emacs-lisp
 (eval-when-compile
   (defmacro igloo--eshell-segment (form &optional fg bg &rest props)
     (declare (indent defun))
@@ -1873,7 +1876,7 @@ TODO: docs
            props))))
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref eshell-prompt :tangle no
+#+begin_src emacs-lisp
 (defun igloo--eshell-prompt ()
   (concat
    (igloo--eshell-segment (user-login-name)
@@ -1896,7 +1899,7 @@ TODO: docs
    (igloo--eshell-segment "> ")))
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref eshell-prompt :tangle no
+#+begin_src emacs-lisp
 (defun igloo--abbrev-terminal (filename)
   (or (equal filename "/")
       (equal filename "~")))
