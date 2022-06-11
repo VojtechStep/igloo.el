@@ -2197,13 +2197,15 @@ TODO: docs
 
 TODO: reason about personal choices here
 
+Semantic tokens use 100% CPU, I should investigate...
+
 #+begin_src emacs-lisp
 (igloo-use-package lsp-mode
   :straight t
   :commands lsp
   :custom
   (lsp-enable-snippet nil)
-  (lsp-enable-semantic-highlighting t)
+  (lsp-semantic-tokens-enable nil)
   (lsp-enable-symbol-highlighting nil)
   (lsp-completion-provider :capf)
   (lsp-keep-workspace-alive nil)
