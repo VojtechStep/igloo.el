@@ -629,7 +629,9 @@ The list of environment variables is something you probably want to modify for y
      "EMAIL"
      "NIX_PATH"))
   :config
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)
+  (unless (getenv "MANPATH")
+    (setenv "MANPATH" (string-trim (shell-command-to-string "manpath")))))
 #+end_src
 
 ** Secret management
