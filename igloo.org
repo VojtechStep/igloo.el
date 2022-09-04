@@ -2443,9 +2443,16 @@ TODO: document the shit out of this, maybe extract it to a package?
   :straight t
   :hook
   ((rustic-mode) . apheleia-mode)
+  ((rustic-mode) . lsp-deferred)
   :apheleia
-  (rustfmt . ("rustup" "run" "nightly" "rustfmt" "--unstable-features" "--skip-children" "--quiet" "--emit" "stdout" file))
-  rustic-mode)
+  ;; (rustfmt . ("rustup" "run" "nightly" "rustfmt" "--unstable-features" "--skip-children" "--quiet" "--emit" "stdout" file))
+  (rustfmt . ("rustfmt" "--quiet" "--emit" "stdout" "--edition" "2021" "--config" "skip_children=true" file))
+  rustic-mode
+  :custom
+  (rustic-lsp-setup-p nil)
+  (lsp-rust-analyzer-server-display-inlay-hints t)
+  (lsp-rust-analyzer-diagnostics-disabled ["unresolved-proc-macro"])
+  (lsp-rust-clippy-preference "on"))
 #+end_src
 
 ** Zig
