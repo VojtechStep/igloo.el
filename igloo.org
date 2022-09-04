@@ -1016,6 +1016,8 @@ When writing a lot of lisp, it makes sense to highlight parentheses. I spent qui
   (igloo-run-with-frontend
    (require 'color)
    (dolist (desc `((show-paren-match
+                    ;; :box
+                    ;; (:line-width (-1 . -1))
                     :foreground
                     ,(face-attribute 'cursor :background)
                     :background
@@ -1434,8 +1436,8 @@ The advice fixes a race condition where LSP attempts to start before direnv upda
 (igloo-use-package direnv
   :straight t
   :demand
-  :custom
-  (direnv-always-show-summary nil)
+  ; :custom
+  ; (direnv-always-show-summary nil)
   :config
   (add-to-list 'warning-suppress-types '(direnv))
   (advice-add 'lsp :before #'direnv-update-environment)
@@ -1635,6 +1637,14 @@ Igloo bindings
   "gn" '(evil-buffer-new :wk "open new buffer"))
 #+end_src
 
+Shadowing other keybindings
+
+#+begin_src emacs-lisp
+(normal global
+  "M-." nil
+  "<mouse-2>" nil)
+#+end_src
+
 ** Installation
 
 Evil is one of the few packages that loads eagerly. It also contributes ~30% to the startup time, so it might be worth investigating how to make it load faster (maybe look into [[https://github.com/noctuid/general.el/issues/180][possible interaction with general]]?).
@@ -1767,6 +1777,8 @@ These packages have no meaningful configuration on its own (yet), except for evi
 
 #+begin_src emacs-lisp
 (igloo-use-package tabulated-list
+  :hook
+  ((tabulated-list) . hl-line-mode)
   :preface
   (declare-function evil-collection-tabulated-list-setup "modes/tabulated-list/evil-collection-tabulated-list")
   :config
@@ -2106,6 +2118,7 @@ I use [[https://activitywatch.net/][ActivityWatch]] for tracking how I use my ti
 
 #+begin_src emacs-lisp
 (igloo-use-package activity-watch-mode
+  :disabled
   :straight t
   :defer 1
   :config
@@ -2210,10 +2223,14 @@ Semantic tokens use 100% CPU, I should investigate...
   (lsp-enable-symbol-highlighting nil)
   (lsp-completion-provider :capf)
   (lsp-keep-workspace-alive nil)
+  (lsp-lens-place-position 'above-line)
+  (lsp-auto-execute-action nil)
   :general
   (normal lsp-mode
     :definer 'minor-mode
-    "gh" (lambda () (interactive) (lsp-hover)))
+    "gh" (lambda () (interactive) (lsp-hover))
+    "gR" '(lsp-rename :wk "Rename identifier")
+    "g." '(lsp-execute-code-action :wk "Code actions"))
   (visual lsp-mode
     :definer 'minor-mode
     "C-j" '(lsp-extend-selection :wk "Extend selection"))
