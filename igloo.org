@@ -2351,8 +2351,24 @@ Fish keeps its tab-width, since the default in the built-in =fish_indent= comman
 
 TODO: document the shit out of this, maybe extract it to a package?
 
+=use-package= tries to compile agda2-mode during byte-compilation, and even doing =(eval-and-compile (let ((byte-compile-current-file nil)) ...))= doesn't seem to prevent it, hence this ugly hack with =igloo--byte-compile-current-file=.
+
 #+begin_src emacs-lisp
-(eval-and-compile
+(eval-when-compile
+  (defvar igloo--byte-compile-current-file byte-compile-current-file)
+  (setq byte-compile-current-file nil))
+(igloo-use-package agda2-mode
+  :straight nil
+  :mode ("\\.\\(agda\\|lagda\\(\\.\\(tex\\|md\\|rst\\|org\\)\\)?\\)\\'" . igloo--load-agda-mode)
+  :custom
+  (agda-input-tweak-all
+    '(agda-input-compose (agda-input-prepend ";")
+                         (agda-input-nonempty)))
+  :preface
+  (declare-function lsp-register-client "lsp-mode")
+  (declare-function make-lsp-client "lsp-mode")
+  (declare-function lsp-stdio-connection "lsp-mode")
+  (declare-function lsp-activate-on "lsp-mode")
   (defun igloo--load-agda-mode ()
     (let ((buffer (current-buffer)))
       (run-with-timer
@@ -2374,10 +2390,14 @@ TODO: document the shit out of this, maybe extract it to a package?
                (if (fboundp 'agda2-mode)
                    (agda2-mode)
                  (error "Agda mode not found")))))))))
-  (cl-pushnew
-   '("\\.l?agda\\'" . igloo--load-agda-mode)
-   auto-mode-alist
-   :test #'equal))
+  :config
+  (with-eval-after-load 'lsp-mode
+    (add-to-list 'lsp-language-id-configuration '(agda2-mode . "agda"))
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-stdio-connection "als")
+                      :activation-fn (lsp-activate-on "agda")
+                      :server-id 'als))))
+(eval-when-compile (setq byte-compile-current-file igloo--byte-compile-current-file))
 #+end_src
 
 ** C/C++
