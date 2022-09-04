@@ -356,6 +356,7 @@ As a good citizen, we start this file with a header.
 ;; every invocation of `make'
 
 ;;; Code:
+(eval-and-compile (setq load-prefer-newer t))
 (eval-when-compile (require 'cl-lib))
 #+end_src
 
