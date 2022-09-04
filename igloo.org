@@ -1002,7 +1002,7 @@ I like seeing TODO and related keywords highlighted in all buffers. [[https://gi
     "tk" '(hl-todo-previous :wk "previous TODO" :jump t)))
 #+end_src
 
-When writing a lot of lisp, it makes sense to highlight parentheses. I spent quite some time figuring out how I want the matching parenthesis to look, and I would have preferred a box around it, but there is no way to do that without having the text jerk around the screen (see [[http://emacs.1067599.n8.nabble.com/bug-13011-24-2-Text-flickering-moving-cursor-with-box-around-text-enabled-td270885.html][this bug report]]).
+When writing a lot of lisp, it makes sense to highlight parentheses. I spent quite some time figuring out how I want the matching parenthesis to look, and I would have preferred a box around it, but there is no way to do that without having the text jerk around the screen (see [[https://debbugs.gnu.org/cgi/bugreport.cgi?bug=13011][this bug report]]).
 
 #+begin_src emacs-lisp
 (igloo-use-package paren
