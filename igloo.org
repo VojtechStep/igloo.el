@@ -2575,7 +2575,7 @@ TODO: split into config + installation
 (igloo-use-package org-mime
   :straight t
   :custom
-  (org-mime-export-options '(:with-toc nil))
+  (org-mime-export-options '(:with-toc nil :with-latex imagemagick))
   :general
   (igloo-local-leader mu4e-compose-mode-map
     "oe" '(org-mime-edit-mail-in-org-mode :wk "Edit org")
@@ -2599,6 +2599,8 @@ TODO: split into more sections
   ((org-mode) . flyspell-mode)
   :custom
   (org-highlight-latex-and-related '(native entities))
+  (org-hide-emphasis-markers t)
+  (org-pretty-entities t)
   (org-catch-invisible-edits 'smart)
   (org-log-done 'time)
   (org-special-ctrl-a/e t) ; bol/eol ignore stars, tags, ...
@@ -2711,6 +2713,8 @@ TODO: split into more sections
 #+begin_src emacs-lisp
 (igloo-use-package org-agenda
   :after org
+  :hook
+  ((org-agenda-mode) . hl-line-mode)
   :custom
   (org-agenda-window-setup 'other-frame)
   (org-agenda-skip-scheduled-if-done t)
@@ -2846,6 +2850,26 @@ SCHEDULED: %t")
   (org-sticky-header-full-path 'full))
 #+end_src
 
+The manual =add-hook= calls are necessary, as =use-package= does not support local hooks ([[https://github.com/jwiegley/use-package/issues/965][issue]]).
+
+#+begin_src emacs-lisp
+(igloo-use-package org-appear
+  :straight t
+  :hook
+  ((org-mode) . org-appear-mode)
+  ((org-appear-mode) .
+   (lambda ()
+     (add-hook 'evil-insert-state-entry-hook #'org-appear-manual-start nil 'local)
+     (add-hook 'evil-insert-state-exit-hook #'org-appear-manual-stop nil 'local)))
+  :custom
+  (org-appear-trigger 'manual)
+  (org-appear-autolinks t)
+  (org-appear-autoentities t)
+  :preface
+  (declare-function org-appear-manual-start "org-appear")
+  (declare-function org-appear-manual-stop "org-appear"))
+#+end_src
+
 ** Exports
 
 ** Code blocks
@@ -2891,6 +2915,7 @@ TODO: =pdf-annot-list-mode-map=
     "<down-mouse-1>" #'pdf-view-mouse-set-region)
   (normal pdf-view-mode-map
     "r" #'image-rotate
+    "c" #'pdf-view-center-in-window
     [remap evil-jump-forward] #'pdf-history-forward
     [remap evil-jump-backward] #'pdf-history-backward)
   :preface
