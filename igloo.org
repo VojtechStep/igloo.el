@@ -3152,8 +3152,10 @@ Putting it all together - helper functions go into =:preface=, special keymap de
 * Utilities
 
 #+begin_src emacs-lisp
+(defvar igloo--yt-history)
+
 (defun igloo-yt (url)
-  (interactive (list (read-string "URL: ")))
+  (interactive (list (read-string "URL: " nil 'igloo--yt-history)))
   (let ((yt-url (replace-regexp-in-string
                  (rx "//" (* (not "/")) "/")
                  "//www.youtube.com/"
