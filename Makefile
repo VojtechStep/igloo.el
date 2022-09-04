@@ -68,6 +68,7 @@ $(TANGLE): $(SRC)
 
 %.elc: %.el
 	$(EMACS) -q --batch --exec="(progn \
+	  (setq load-prefer-newer t) \
 	  (setq user-emacs-directory \"$(abspath $(DESTDIR))/\") \
 	  (setq user-init-file (locate-user-emacs-file \"init.el\")) \
 	  (setq early-init-file (locate-user-emacs-file \"early-init.el\")) \
