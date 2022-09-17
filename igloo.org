@@ -594,7 +594,7 @@ The list of environment variables is something you probably want to modify for y
 #+begin_src emacs-lisp
 (igloo-use-package exec-path-from-shell
   :straight t
-  :demand
+  :demand t
   :custom
   (exec-path-from-shell-shell-name (getenv "SHELL"))
   (exec-path-from-shell-arguments nil)
@@ -642,7 +642,7 @@ TODO: docs, at least a little
 #+begin_src emacs-lisp
 (igloo-use-package auth-source-pass
   :after auth-source
-  :demand
+  :demand t
   :custom
   (auth-sources '(password-store)))
 #+end_src
@@ -660,7 +660,7 @@ Use [[https://github.com/justbur/emacs-which-key][which-key]] for showing availa
 #+begin_src emacs-lisp
 (igloo-use-package which-key
   :straight t
-  :demand
+  :demand t
   :custom
   (which-key-idle-delay 0.6)
   :config
@@ -679,7 +679,7 @@ I don't use it here, but one can specify not only =:prefix=, but also a =:global
 
 (igloo-use-package general
   :straight (:fork (:repo "VojtechStep/general.el"))
-  :demand
+  :demand t
   :config
   (eval-when-compile
     (general-create-definer igloo-leader
@@ -849,7 +849,7 @@ Emacs has built-in functionality for treating =CamelCase= and =snake_case= label
 
 #+begin_src emacs-lisp
 (igloo-use-package subword
-  :demand
+  :demand t
   :config
   (global-subword-mode))
 #+end_src
@@ -858,7 +858,7 @@ Insert bracket pairs automatically.
 
 #+begin_src emacs-lisp
 (igloo-use-package elec-pair
-  :demand
+  :demand t
   :config
   (electric-pair-mode))
 #+end_src
@@ -933,7 +933,7 @@ I do love myself a dark theme. I go with [[https://github.com/purcell/color-them
 #+begin_src emacs-lisp
 (igloo-use-package color-theme-sanityinc-tomorrow
   :straight t
-  :demand
+  :demand t
   :config
   (load-theme 'sanityinc-tomorrow-night t)
   (custom-theme-set-faces
@@ -981,7 +981,7 @@ You will sometimes see the form =(setq-default display-line-numbers 'visual)= in
 
 #+begin_src emacs-lisp
 (igloo-use-package display-line-numbers
-  :demand
+  :demand t
   :hook
   ((prog-mode text-mode) . display-line-numbers-mode)
   :custom
@@ -1006,7 +1006,7 @@ When writing a lot of lisp, it makes sense to highlight parentheses. I spent qui
 
 #+begin_src emacs-lisp
 (igloo-use-package paren
-  :demand
+  :demand t
   :custom
   (show-paren-delay 0)
   :preface
@@ -1248,7 +1248,7 @@ This one is pretty easy - I extracted my modeline configuration to [[https://git
   :straight (:type git
              :host github
              :repo "VojtechStep/vs-modeline.el")
-  :demand
+  :demand t
   :config
   (vs-modeline-mode))
 #+end_src
@@ -1303,7 +1303,7 @@ This package is a glue for integrating prescient into selectrum. The =:after= cl
 (igloo-use-package selectrum-prescient
   :after selectrum
   :straight t
-  :demand
+  :demand t
   :custom-face
   (selectrum-prescient-primary-highlight ((t (:foreground "#b5bd68"))))
   (selectrum-prescient-secondary-highlight ((t (:foreground "#8abeb7"))))
@@ -1435,7 +1435,7 @@ The advice fixes a race condition where LSP attempts to start before direnv upda
 #+begin_src emacs-lisp
 (igloo-use-package direnv
   :straight t
-  :demand
+  :demand t
   ; :custom
   ; (direnv-always-show-summary nil)
   :config
@@ -1653,7 +1653,7 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
 (eval-when-compile (defvar evil-want-keybinding nil))
 (igloo-use-package evil
   :straight t
-  :demand
+  :demand t
   :custom
   <<evil-config>>
   (evil-lookup-func #'helpful-at-point)
@@ -1705,7 +1705,7 @@ There is currently [[https://github.com/jwiegley/use-package/issues/836][no way]
 (igloo-use-package evil-collection
   :after evil
   :straight t
-  :demand)
+  :demand t)
 #+end_src
 
 [[https://github.com/emacs-evil/evil-surround][evil-surround]] allows one to create, change and delete paired delimiters.
@@ -1714,7 +1714,7 @@ There is currently [[https://github.com/jwiegley/use-package/issues/836][no way]
 (igloo-use-package evil-surround
   :after evil
   :straight t
-  :demand
+  :demand t
   :config
   (global-evil-surround-mode))
 #+end_src
@@ -1725,7 +1725,7 @@ There is currently [[https://github.com/jwiegley/use-package/issues/836][no way]
 (igloo-use-package evil-goggles
   :after evil
   :straight t
-  :demand
+  :demand t
   :custom
   (evil-goggles-duration 0.1)
   :config
@@ -1738,7 +1738,7 @@ There is currently [[https://github.com/jwiegley/use-package/issues/836][no way]
 (igloo-use-package evil-commentary
   :after evil
   :straight t
-  :demand
+  :demand t
   :config
   (evil-commentary-mode))
 #+end_src
@@ -2724,6 +2724,7 @@ TODO: split into more sections
 #+begin_src emacs-lisp
 (igloo-use-package org-clock
   :after org
+  :demand t
   :custom
   (org-clock-x11idle-program-name "x11idle")
   (org-clock-persist 'history)
@@ -2782,7 +2783,7 @@ SCHEDULED: %t")
 #+begin_src emacs-lisp
 (igloo-use-package org-attach
   :after org
-  :demand
+  :demand t
   :custom
   (org-attach-use-inheritance t))
 #+end_src
@@ -2805,7 +2806,7 @@ SCHEDULED: %t")
 #+begin_src emacs-lisp
 (igloo-use-package evil-org-agenda
   :after org-agenda
-  :demand
+  :demand t
   :hook
   ((org-agenda-mode) . evil-org-agenda-set-keys))
 #+end_src
@@ -3103,7 +3104,7 @@ Another enhancement is adding syntax highlighting to code blocks. The package =s
 (igloo-use-package shr-tag-pre-highlight
   :after shr
   :straight t
-  :demand
+  :demand t
   :preface
   (declare-function shr-tag-pre-highlight "shr-tag-pre-highlight")
   (defun igloo--shr-render-pre (pre)
