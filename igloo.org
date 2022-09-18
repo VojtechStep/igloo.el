@@ -841,6 +841,7 @@ The reason I prefer spaces over tabs is because when working with LISP-y languag
 #+begin_src emacs-lisp
 (setq-default tab-width 2)
 (setq-default indent-tabs-mode nil)
+(igloo-link-offset 'standard-indent)
 (setq-default sentence-end-double-space nil)
 (setq-default truncate-lines t)
 #+end_src
