@@ -773,6 +773,7 @@ This section contains package declarations for built-in functionality that only 
   (igloo-leader
     "cc" '(bury-buffer :wk "close buffer")
     "ck" '(kill-current-buffer :wk "kill buffer")
+    "cq" '(save-buffers-kill-emacs :wk "kill emacs server")
     "gr" '(revert-buffer :wk "revert buffer")
     "gR" '(rename-buffer :wk "rename buffer")))
 #+end_src
@@ -2679,7 +2680,9 @@ TODO: split into more sections
                    ("convert -density %D -trim -antialias %f -quality 100 %O"))))
   :general
   (igloo-leader
-    "oc" '(org-capture :wk "capture")
+    "occ" '(org-capture :wk "capture")
+    "oci" '(igloo-clock-in :wk "clock in" :no-autoload t)
+    "oco" '(igloo-clock-out :wk "clock out" :no-autoload t)
     "oa" '(igloo-org-agenda :wk "agenda" :no-autoload t)
     "of" '(igloo-open-agenda-file :wk "agenda files" :no-autoload t))
   (igloo-local-leader org-mode-map
