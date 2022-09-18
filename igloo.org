@@ -2686,6 +2686,10 @@ TODO: split into more sections
     "g" '(consult-org-heading :wk "go to heading"))
   :preface
   (declare-function org-agenda-files "org")
+  (declare-function org-agenda-clock-in "org-agenda")
+  (declare-function org-clock-in "org-clock")
+  (declare-function org-agenda-clock-out "org-agenda")
+  (declare-function org-clock-out "org-clock")
   (defvar org-agenda-tag-filter-preset nil)
   (defun igloo-org-agenda ()
     (interactive)
@@ -2697,7 +2701,22 @@ TODO: split into more sections
     (require 'org-agenda)
     (find-file (expand-file-name
                 (completing-read "Open agenda file: "
-                                 (org-agenda-files))))))
+                                 (org-agenda-files)))))
+  (defun igloo-clock-in (arg)
+    (interactive "P")
+    (cond
+     ((derived-mode-p 'org-agenda)
+      (org-agenda-clock-in arg))
+     ((derived-mode-p 'org-mode)
+      (org-clock-in arg))
+     (t (org-clock-in '(4)))))
+  (defun igloo-clock-out (arg)
+    (interactive "P")
+    (if (derived-mode-p 'org-agenda)
+        (org-agenda-clock-out)
+      (org-clock-out arg nil)))
+  :init
+  (require 'org-loaddefs))
 #+end_src
 
 #+begin_src emacs-lisp
