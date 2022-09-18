@@ -2613,20 +2613,23 @@ TODO: split into more sections
   ((org-mode) . visual-line-mode)
   ((org-mode) . org-indent-mode)
   ((org-mode) . flyspell-mode)
+  ((org-mode) . (lambda () (hl-todo-mode -1)))
   :custom
   (org-highlight-latex-and-related '(native entities))
   (org-hide-emphasis-markers t)
   (org-pretty-entities t)
   (org-catch-invisible-edits 'smart)
   (org-log-done 'time)
+  (org-log-into-drawer t)
   (org-special-ctrl-a/e t) ; bol/eol ignore stars, tags, ...
   (org-directory "~/Org/")
   (org-agenda-files
    (directory-files-recursively org-directory "\\`[^.].*\\.org\\'"))
   (org-use-fast-todo-selection 'expert)
   (org-todo-keywords
-   '((sequence "TODO(t)" "WAITING(w@)" "|" "DONE(d)" "CANCELLED(c)")))
-  (org-use-tag-inheritance nil)
+   '((sequence "TODO(t)" "NEXT(n)" "WAITING(w@)" "|" "DONE(d)" "CANCELLED(c@)")))
+  (org-enforce-todo-dependencies t)
+  ;; (org-use-tag-inheritance nil)
   (org-babel-load-languages
    '((emacs-lisp . t)
      (python . t)
@@ -2723,7 +2726,15 @@ TODO: split into more sections
   :custom
   (org-todo-keyword-faces
    '(("WAITING" . (:foreground "black" :background "white"))
+     ("NEXT" . "#e2e")
      ("CANCELLED" . "#fff"))))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-duration
+  :after org
+  :custom
+  (org-duration-format 'h:mm))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2734,7 +2745,17 @@ TODO: split into more sections
   :custom
   (org-agenda-window-setup 'other-frame)
   (org-agenda-skip-scheduled-if-done t)
-  (org-agenda-skip-deadline-if-done t))
+  (org-agenda-skip-deadline-if-done t)
+  (org-agenda-clockreport-parameter-plist '(:maxlevel 3 :indent nil :fileskip0 t))
+  (org-agenda-custom-commands
+   '((" " "Agenda"
+      ((agenda "" ())
+       (todo "NEXT"
+             ((org-agenda-overriding-header "Next tasks")
+              (org-tags-match-list-sublevels 'indented)
+              (org-agenda-sorting-strategy
+               '(priority-down effort-up category-keep)))))
+      nil))))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2743,7 +2764,18 @@ TODO: split into more sections
   :demand t
   :custom
   (org-clock-x11idle-program-name "x11idle")
-  (org-clock-persist 'history)
+  (org-clock-persist t)
+  (org-clock-history-length 25)
+  (org-clock-in-resume t)
+  (org-clock-out-remove-zero-time-clocks t)
+  (org-clock-report-include-clocking-task t)
+  (org-clock-in-switch-to-state #'igloo--clock-in-mark-next)
+  :preface
+  (declare-function org-get-todo-state "org")
+  (defun igloo--clock-in-mark-next (_kw)
+    (and (not (and (boundp 'org-capture-mode) org-capture-mode))
+         (string= (org-get-todo-state) "TODO")
+         "NEXT"))
   :config
   (org-clock-persistence-insinuate))
 #+end_src
@@ -2769,7 +2801,8 @@ TODO: split into more sections
         (taskfile "Tasks.org")
         (learnfile "Learn.org")
         (vocabfile "Vocabulary.org")
-        (journalfile "Diary.org"))
+        (journalfile "Diary.org")
+        (htfile "Hightec.org"))
     (dolist (tpl `(("e" "Emacs todo" entry
                     (file+olp ,todofile "Emacs")
                     "** TODO %?")
@@ -2792,7 +2825,23 @@ Kanji: [%^{Kanji}]")
 SCHEDULED: %t")
                    ("d" "Diary" plain
                     (file+olp+datetree ,journalfile)
-                    "%?")))
+                    "%?")
+                   ("h" "Hightec")
+                   ("hs" "Standup" entry
+                    (file+olp ,htfile "Standups")
+                    "* %u\n%?"
+                    :clock-in t :clock-resume t)
+                   ("hm" "Meeting" entry
+                    (file+olp ,htfile "Meetings")
+                    "* %?\n%U"
+                    :clock-in t :clock-resume t)
+                   ("hc" "Consultation" entry
+                    (file+olp ,htfile "Consultations")
+                    "* %?\n%U"
+                    :clock-in t :clock-resume t)
+                   ("hi" "Issue" entry
+                    (file+olp ,htfile "Issues")
+                    "* TODO %? %^g\n%U")))
       (cl-pushnew tpl org-capture-templates :test #'equal))))
 #+end_src
 
@@ -2802,6 +2851,13 @@ SCHEDULED: %t")
   :demand t
   :custom
   (org-attach-use-inheritance t))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package org-archive
+  :after org
+  :custom
+  (org-archive-subtree-add-inherited-tags t))
 #+end_src
 
 #+begin_src emacs-lisp
