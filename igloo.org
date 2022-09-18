@@ -2783,7 +2783,7 @@ TODO: split into more sections
   :after org
   :demand t
   :custom
-  (org-clock-x11idle-program-name "x11idle")
+  (org-clock-x11idle-program-name "xprintidle")
   (org-clock-persist t)
   (org-clock-history-length 25)
   (org-clock-in-resume t)
