@@ -2421,7 +2421,24 @@ TODO: document the shit out of this, maybe extract it to a package?
 ** TypeScript
 
 #+begin_src emacs-lisp
+(igloo-use-package web-mode
+  :straight t
+  :mode ("\\.[tj]sx?\\'" . web-mode)
+  :hook
+  ((web-mode) . igloo--try-enable-tsx)
+  :custom
+  (lsp-javascript-display-inlay-hints t)
+  (lsp-javascript-display-parameter-name-hints "literals")
+  :preface
+  (defun igloo--try-enable-tsx ()
+    (when (string-match-p "[tj]sx?\\'" (file-name-extension buffer-file-name))
+      (setq-local web-mode-enable-auto-quoting nil)
+      (lsp))))
+#+end_src
+
+#+begin_src emacs-lisp
 (igloo-use-package typescript-mode
+  :disabled
   :straight t
   :hook
   ;; ((typescript-mode) . tide-setup)
