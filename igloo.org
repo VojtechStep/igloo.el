@@ -149,6 +149,7 @@ For this reason, we define a macro to substitute the =(use-package ...)= form wi
 - Put =(declare-function)='s and helper function declarations in the =:preface=
 - Use =:custom= over =(setq ..)=
 - Put arguments to =:hooks= on a new line and always wrap the triggering hooks in a list
+- When adding an =igloo--...= function to a hook, =use-package= complains about multiple definitions in the same file. In this case, don't use the =:hook= keyword, but instead use =add-hook= directly in =:init=
 - When a more thorough documentation of package configuration is necessary, split the section into two headings - Configuration and Installation. Then, set the [[https://orgmode.org/manual/Noweb-Reference-Syntax.html][=noweb-ref=]] header argument in the Configuration section, and put the =igloo-use-package= form in the Installation section, with the proper =<< ... >>= reference.
 - Unless a different default is required, set language-specific =-offset= variables (the ones that handle tab width) to =tab-width= (using the =igloo-link-offset= macro in the =:init= block)
 
@@ -2424,8 +2425,6 @@ TODO: document the shit out of this, maybe extract it to a package?
 (igloo-use-package web-mode
   :straight t
   :mode ("\\.[tj]sx?\\'" . web-mode)
-  :hook
-  ((web-mode) . igloo--try-enable-tsx)
   :custom
   (lsp-javascript-display-inlay-hints t)
   (lsp-javascript-display-parameter-name-hints "literals")
@@ -2433,7 +2432,9 @@ TODO: document the shit out of this, maybe extract it to a package?
   (defun igloo--try-enable-tsx ()
     (when (string-match-p "[tj]sx?\\'" (file-name-extension buffer-file-name))
       (setq-local web-mode-enable-auto-quoting nil)
-      (lsp))))
+      (lsp)))
+  :init
+  (add-hook 'web-mode-hook #'igloo--try-enable-tsx))
 #+end_src
 
 #+begin_src emacs-lisp
