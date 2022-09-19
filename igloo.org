@@ -863,6 +863,7 @@ Insert bracket pairs automatically.
 (igloo-use-package elec-pair
   :demand t
   :config
+  (add-to-list 'electric-pair-pairs '(?\' . ?\'))
   (electric-pair-mode))
 #+end_src
 
