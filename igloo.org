@@ -1329,7 +1329,7 @@ The evil integration bit marks some of consult's commands as "jumping", so that 
   :custom
   (xref-show-xrefs-function #'consult-xref)
   (xref-show-definitions-function #'consult-xref)
-  (consult-project-root-function #'projectile-project-root)
+  (consult-project-function #'igloo--consult-project-root)
   (consult-narrow-key (kbd "C-n"))
   :general
   ((motion insert) override
@@ -1341,6 +1341,8 @@ The evil integration bit marks some of consult's commands as "jumping", so that 
   :preface
   (declare-function projectile-project-root "projectile")
   (declare-function evil-collection-consult-setup "modes/consult/evil-collection-consult")
+  (defun igloo--consult-project-root (_may-prompt)
+    (projectile-project-root))
   :config
   (with-eval-after-load 'evil-collection
     (evil-collection-consult-setup)))
