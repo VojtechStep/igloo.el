@@ -2887,7 +2887,8 @@ SCHEDULED: %t")
                     :clock-in t :clock-resume t)
                    ("hi" "Issue" entry
                     (file+olp ,htfile "Issues")
-                    "* TODO %? %^g\n%U")))
+                    "* TODO %? %^g\n%U"
+                    :clock-in t :clock-resume t)))
       (cl-pushnew tpl org-capture-templates :test #'equal))))
 #+end_src
 
