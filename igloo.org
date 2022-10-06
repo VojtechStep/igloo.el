@@ -2323,7 +2323,14 @@ Fish keeps its tab-width, since the default in the built-in =fish_indent= comman
   ((nix-mode) . lsp-deferred)
   :apheleia
   (nixpkgs-fmt . ("nixpkgs-fmt"))
-  nix-mode)
+  nix-mode
+  :config
+  (with-eval-after-load 'lsp-mode
+    (add-to-list 'lsp-language-id-configuration '(nix-mode . "nil"))
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-stdio-connection "nil")
+                      :activation-fn (lsp-activate-on "nil")
+                      :server-id 'nix-nil))))
 #+end_src
 
 ** Coq
