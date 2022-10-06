@@ -862,8 +862,12 @@ Insert bracket pairs automatically.
 #+begin_src emacs-lisp
 (igloo-use-package elec-pair
   :demand t
+  :preface
+  (defun igloo--enable-standard-pairs ()
+    (make-local-variable 'electric-pair-pairs)
+    (push '(?\' . ?\') electric-pair-pairs)
+    (push '(?\` . ?\`) electric-pair-pairs))
   :config
-  (add-to-list 'electric-pair-pairs '(?\' . ?\'))
   (electric-pair-mode))
 #+end_src
 
@@ -2429,6 +2433,8 @@ TODO: document the shit out of this, maybe extract it to a package?
 (igloo-use-package web-mode
   :straight t
   :mode ("\\.[tj]sx?\\'" . web-mode)
+  :hook
+  ((web-mode) . igloo--enable-standard-pairs)
   :custom
   (lsp-javascript-display-inlay-hints t)
   (lsp-javascript-display-parameter-name-hints "literals")
