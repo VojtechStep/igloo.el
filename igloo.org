@@ -2223,6 +2223,8 @@ TODO: reason about personal choices here
 
 Semantic tokens use 100% CPU, I should investigate...
 
+The JSON overrides are required because some languages servers return NULL bytes in their responses. Emacs 29 should fix it.
+
 #+begin_src emacs-lisp
 (igloo-use-package lsp-mode
   :straight t
@@ -2245,7 +2247,17 @@ Semantic tokens use 100% CPU, I should investigate...
     :definer 'minor-mode
     "C-j" '(lsp-extend-selection :wk "Extend selection"))
   :preface
-  (declare-function lsp-hover "lsp-mode"))
+  (declare-function lsp-hover "lsp-mode")
+  :config
+  (advice-add 'json-parse-string :around
+              (lambda (orig string &rest rest)
+                (apply orig (string-replace "\\u0000" "" string)
+                       rest)))
+  (advice-add 'json-parse-buffer :around
+              (lambda (orig &rest rest)
+                (while (re-search-forward "\\u0000" nil t)
+                  (replace-match ""))
+                (apply orig rest))))
 #+end_src
 
 ** Elisp
