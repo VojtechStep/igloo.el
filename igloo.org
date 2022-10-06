@@ -2907,9 +2907,10 @@ SCHEDULED: %t")
                    ("d" "Diary" plain
                     (file+olp+datetree ,journalfile)
                     "%?")
+
                    ("h" "Hightec")
                    ("hs" "Standup" entry
-                    (file+olp ,htfile "Standups")
+                    (file+regexp ,htfile "Standups")
                     "* %u\n%?"
                     :clock-in t :clock-resume t)
                    ("hm" "Meeting" entry
