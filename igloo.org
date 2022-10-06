@@ -2814,15 +2814,29 @@ TODO: split into more sections
   (org-agenda-skip-scheduled-if-done t)
   (org-agenda-skip-deadline-if-done t)
   (org-agenda-clockreport-parameter-plist '(:maxlevel 3 :indent nil :fileskip0 t))
+  (org-agenda-clock-consistency-checks
+   '(:max-duration "10:00"
+     :min-duration 0
+     :max-gap "0:30"
+     :gap-ok-around ("6:00" "12:00" "14:00")
+     :default-face ((:background "DarkRed")
+                    (:foreground "white"))))
   (org-agenda-custom-commands
    '((" " "Agenda"
-      ((agenda "" ())
+      ((agenda ""
+               ((org-agenda-span 'day)))
        (todo "NEXT"
              ((org-agenda-overriding-header "Next tasks")
               (org-tags-match-list-sublevels 'indented)
               (org-agenda-sorting-strategy
-               '(priority-down effort-up category-keep)))))
-      nil))))
+               '(priority-down effort-up category-keep))))
+       (todo "WAITING"
+             ((org-agenda-overriding-header "Waiting tasks")
+              (org-tags-match-list-sublevels 'indented)
+              (org-agenda-sorting-strategy
+               '(timestamp-up category-keep)))))
+      ((org-agenda-start-with-clockreport-mode t)
+       (org-agenda-start-with-log-mode 'clockcheck))))))
 #+end_src
 
 #+begin_src emacs-lisp
