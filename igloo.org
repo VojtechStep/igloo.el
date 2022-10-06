@@ -2705,8 +2705,8 @@ TODO: split into more sections
   :general
   (igloo-leader
     "occ" '(org-capture :wk "capture")
-    "oci" '(igloo-clock-in :wk "clock in" :no-autoload t)
-    "oco" '(igloo-clock-out :wk "clock out" :no-autoload t)
+    "oi" '(igloo-clock-in :wk "clock in" :no-autoload t)
+    "oo" '(igloo-clock-out :wk "clock out" :no-autoload t)
     "oa" '(igloo-org-agenda :wk "agenda" :no-autoload t)
     "of" '(igloo-open-agenda-file :wk "agenda files" :no-autoload t))
   (igloo-local-leader org-mode-map
@@ -2734,9 +2734,9 @@ TODO: split into more sections
     (cond
      ((derived-mode-p 'org-agenda)
       (org-agenda-clock-in arg))
-     ((derived-mode-p 'org-mode)
-      (org-clock-in arg))
-     (t (org-clock-in '(4)))))
+     ((null arg)
+      (org-clock-in '(4)))
+     (t (org-clock-in arg))))
   (defun igloo-clock-out (arg)
     (interactive "P")
     (if (derived-mode-p 'org-agenda)
