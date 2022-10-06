@@ -2919,7 +2919,7 @@ SCHEDULED: %t")
                     :clock-in t :clock-resume t)
                    ("hc" "Consultation" entry
                     (file+olp ,htfile "Consultations")
-                    "* %?\n%U"
+                    "* %? %^g\n%U"
                     :clock-in t :clock-resume t)
                    ("hi" "Issue" entry
                     (file+olp ,htfile "Issues")
