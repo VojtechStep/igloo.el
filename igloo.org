@@ -1299,6 +1299,9 @@ Prescient also sorts the candidates according to the frequency of their use, so 
   :straight t
   :custom
   (prescient-filter-method '(literal initialism fuzzy))
+  :custom-face
+  (prescient-primary-highlight ((t (:foreground "#b5bd68"))))
+  (prescient-secondary-highlight ((t (:foreground "#8abeb7"))))
   :preface
   (declare-function prescient-persist-mode "prescient")
   :config
@@ -1312,9 +1315,6 @@ This package is a glue for integrating prescient into selectrum. The =:after= cl
   :after selectrum
   :straight t
   :demand t
-  :custom-face
-  (selectrum-prescient-primary-highlight ((t (:foreground "#b5bd68"))))
-  (selectrum-prescient-secondary-highlight ((t (:foreground "#8abeb7"))))
   :config
   (selectrum-prescient-mode))
 #+end_src
