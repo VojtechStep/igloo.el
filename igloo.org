@@ -2453,6 +2453,9 @@ TODO: document the shit out of this, maybe extract it to a package?
   :custom
   (lsp-javascript-display-inlay-hints t)
   (lsp-javascript-display-parameter-name-hints "literals")
+  (web-mode-comment-formats
+   '(("javascript" . "//")
+     ("typescript" . "//")))
   :preface
   (defun igloo--try-enable-tsx ()
     (when (string-match-p "[tj]sx?\\'" (file-name-extension buffer-file-name))
