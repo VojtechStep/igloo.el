@@ -2444,9 +2444,12 @@ TODO: document the shit out of this, maybe extract it to a package?
 #+begin_src emacs-lisp
 (igloo-use-package web-mode
   :straight t
-  :mode ("\\.[tj]sx?\\'" . web-mode)
+  :mode
+  ("\\.[tj]sx?\\'" . web-mode)
+  ("\\.json\\'" . web-mode)
   :hook
   ((web-mode) . igloo--enable-standard-pairs)
+  ((web-mode) . apheleia-mode)
   :custom
   (lsp-javascript-display-inlay-hints t)
   (lsp-javascript-display-parameter-name-hints "literals")
