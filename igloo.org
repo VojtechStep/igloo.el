@@ -2934,7 +2934,16 @@ SCHEDULED: %t")
                    ("hi" "Issue" entry
                     (file+olp ,htfile "Issues")
                     "* TODO %? %^g\n%U"
-                    :clock-in t :clock-resume t)))
+                    :clock-in t :clock-resume t)
+                   ("hr" "Month report" entry
+                    (file+olp ,htfile "Reports")
+                    "* %^{month}
+#+BEGIN: clocktable :maxlevel 1 :block %\\1 :step month
+#+END:
+#+BEGIN: clocktable :maxlevel 2 :block %\\1 :step week :stepskip0 t :tcolumns 1
+#+END:"
+                    :immediate-finish t :jump-to-captured t
+                    :tree-type month)))
       (cl-pushnew tpl org-capture-templates :test #'equal))))
 #+end_src
 
