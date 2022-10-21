@@ -2844,7 +2844,9 @@ TODO: split into more sections
              ((org-agenda-overriding-header "Waiting tasks")
               (org-tags-match-list-sublevels 'indented)
               (org-agenda-sorting-strategy
-               '(timestamp-up category-keep)))))
+               '(timestamp-up category-keep))))
+       (search "{^\*+\s+Organization}"
+               ((org-agenda-overriding-header "Organization tasks"))))
       ((org-agenda-start-with-clockreport-mode t)
        (org-agenda-start-with-log-mode 'clockcheck))))))
 #+end_src
