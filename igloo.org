@@ -1334,7 +1334,7 @@ The evil integration bit marks some of consult's commands as "jumping", so that 
   (xref-show-xrefs-function #'consult-xref)
   (xref-show-definitions-function #'consult-xref)
   (consult-project-function #'igloo--consult-project-root)
-  (consult-narrow-key (kbd "C-n"))
+  (consult-narrow-key "C-n")
   :general
   ((motion insert) override
     "C-f" #'consult-ripgrep)
