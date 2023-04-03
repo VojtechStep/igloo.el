@@ -2243,6 +2243,7 @@ The JSON overrides are required because some languages servers return NULL bytes
   (lsp-keep-workspace-alive nil)
   (lsp-lens-place-position 'above-line)
   (lsp-auto-execute-action nil)
+  (lsp-disabled-clients '(lsp-volar))
   :general
   (normal lsp-mode
     :definer 'minor-mode
@@ -2255,6 +2256,7 @@ The JSON overrides are required because some languages servers return NULL bytes
   :preface
   (declare-function lsp-hover "lsp-mode")
   :config
+  (delete 'lsp-volar lsp-client-packages) ;; messes up typescript dependency
   (advice-add 'json-parse-string :around
               (lambda (orig string &rest rest)
                 (apply orig (string-replace "\\u0000" "" string)
@@ -2455,6 +2457,18 @@ TODO: document the shit out of this, maybe extract it to a package?
 ** TypeScript
 
 #+begin_src emacs-lisp
+(igloo-use-package lsp-eslint
+  :preface
+  (declare-function lsp-eslint-server-command "lsp-eslint")
+  :config
+  (advice-add #'lsp-eslint-server-command :before
+              (lambda (&rest _)
+                (when-let ((eslint-server-path (getenv "VSCODE_ESLINT")))
+                  (setq lsp-eslint-server-command
+                        `("node" ,eslint-server-path "--stdio"))))))
+#+end_src
+
+#+begin_src emacs-lisp
 (igloo-use-package web-mode
   :straight t
   :mode
@@ -2463,6 +2477,9 @@ TODO: document the shit out of this, maybe extract it to a package?
   :hook
   ((web-mode) . igloo--enable-standard-pairs)
   ((web-mode) . apheleia-mode)
+  :apheleia
+  (prettier-local . ("yarn" "--silent" "prettier" "--stdin-filepath" filepath))
+  web-mode
   :custom
   (lsp-javascript-display-inlay-hints t)
   (lsp-javascript-display-parameter-name-hints "literals")
@@ -2470,9 +2487,14 @@ TODO: document the shit out of this, maybe extract it to a package?
    '(("javascript" . "//")
      ("typescript" . "//")))
   :preface
+  (declare-function lsp-dependency "lsp-mode")
   (defun igloo--try-enable-tsx ()
     (when (string-match-p "[tj]sx?\\'" (file-name-extension buffer-file-name))
       (setq-local web-mode-enable-auto-quoting nil)
+      (require 'lsp-javascript)
+      (let ((potential-tsserver (expand-file-name "node_modules/.bin/tsserver" (projectile-project-root))))
+        (when (file-exists-p potential-tsserver)
+          (lsp-dependency 'typescript `(:system ,potential-tsserver))))
       (lsp)))
   :init
   (add-hook 'web-mode-hook #'igloo--try-enable-tsx))
