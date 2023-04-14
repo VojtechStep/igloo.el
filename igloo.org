@@ -2399,6 +2399,10 @@ TODO: document the shit out of this, maybe extract it to a package?
 (igloo-use-package agda2-mode
   :straight nil
   :mode ("\\.\\(agda\\|lagda\\(\\.\\(tex\\|md\\|rst\\|org\\)\\)?\\)\\'" . igloo--load-agda-mode)
+  :hook
+  ((agda2-mode) . (lambda ()
+                    (setq fill-column 80)
+                    (display-fill-column-indicator-mode)))
   :custom
   (agda-input-tweak-all
     '(agda-input-compose (agda-input-prepend ";")
