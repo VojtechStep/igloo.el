@@ -1398,7 +1398,7 @@ When projectile looks for files, it correctly detects that I have [[https://gith
   (igloo-leader
     "p" '(nil :wk "projectile")
     "po" '(projectile-switch-project :wk "open project")
-    "pa" '(projectile-commander :wk "project menu")
+    "pa" '(projectile-command-map :wk "project menu")
     "pka" '(projectile-kill-buffers :wk "close all buffers")
     "pd" '(projectile-dired :wk "project dired")
     "f" '(igloo-ff-dwim :wk "files in project" :no-autoload t))
