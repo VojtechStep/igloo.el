@@ -164,11 +164,16 @@ Aliasing the =-offset= variables usually produces a warning, because their origi
 #+begin_src emacs-lisp
 (eval-when-compile
   (defmacro igloo-link-offset (offset)
-    `(let ((warning-suppress-log-types (list (list 'defvaralias 'losing-value ,offset))))
-       (defvaralias ,offset 'tab-width))))
+    `(progn
+       (require 'warnings)
+       (let ((warning-suppress-log-types (list (list 'defvaralias 'losing-value))))
+         (defvaralias ,offset 'tab-width)))))
 #+end_src
 
 *** Linter
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 
 #+begin_src emacs-lisp :tangle lint-conv.el
 (eval-when-compile
@@ -845,9 +850,11 @@ The reason I prefer spaces over tabs is because when working with LISP-y languag
 #+begin_src emacs-lisp
 (setq-default tab-width 2)
 (setq-default indent-tabs-mode nil)
-(igloo-link-offset 'standard-indent)
 (setq-default sentence-end-double-space nil)
 (setq-default truncate-lines t)
+(igloo-use-package indent
+  :init
+  (igloo-link-offset 'standard-indent))
 #+end_src
 
 Emacs has built-in functionality for treating =CamelCase= and =snake_case= labels as consisting of separate "words", making it more natural to move around. Turn it on.
