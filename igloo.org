@@ -1337,7 +1337,6 @@ The evil integration bit marks some of consult's commands as "jumping", so that 
   :custom
   (xref-show-xrefs-function #'consult-xref)
   (xref-show-definitions-function #'consult-xref)
-  (consult-project-function #'igloo--consult-project-root)
   (consult-narrow-key "C-n")
   :general
   ((motion insert) override
@@ -1347,10 +1346,7 @@ The evil integration bit marks some of consult's commands as "jumping", so that 
   (igloo-local-leader-with-minor outline
     "g" '(consult-outline :wk "go to heading"))
   :preface
-  (declare-function projectile-project-root "projectile")
   (declare-function evil-collection-consult-setup "modes/consult/evil-collection-consult")
-  (defun igloo--consult-project-root (_may-prompt)
-    (projectile-project-root))
   :config
   (with-eval-after-load 'evil-collection
     (evil-collection-consult-setup)))
@@ -2094,6 +2090,7 @@ With an extension, magit can collect TODO's sprinkled around your git projects, 
 
 #+begin_src emacs-lisp
 (igloo-use-package magit-todos
+  :disabled
   :after magit
   :straight t
   :hook
