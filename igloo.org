@@ -27,7 +27,7 @@ Here's a cherry-picked list of some of the packages I use:
 - [[https://github.com/jwiegley/use-package][use-package]] for package configuration
 - [[https://github.com/noctuid/general.el][general.el]] for keybinding management
 - [[https://github.com/bbatsov/projectile/][projectile]] for project management
-- [[https://github.com/raxod502/selectrum][selectrum]] for incremental narrowing
+- [[https://github.com/minad/vertico][vertico.el]] for minibuffer completions
 - [[https://github.com/magit/magit][Magit]] for interfacing with Git
 - [[https://github.com/google/mozc][mozc]] for Japanese input
 - [[https://github.com/company-mode/company-mode][company-mode]] for completion
@@ -752,6 +752,8 @@ This section contains package declarations for built-in functionality that only 
 
 #+begin_src emacs-lisp
 (igloo-use-package simple
+  :custom
+  (read-extended-command-predicate #'command-completion-default-include-p)
   :general
   (insert global
     "C-v" #'yank
@@ -786,7 +788,7 @@ As for the appearance, I'm not a huge fan of the startup screen, so disable it.
 
 I also consider myself a 1337 h4x0r, so don't nag me about advanced-level commands.
 
-I use [[https://github.com/raxod502/selectrum][selectrum]] as a completion framework (more on that [[*Selection framework][later]]), so I don't care much about shorter ways I can type in commands.
+I use [[https://github.com/minad/vertico][vertico.el]] as a completion framework (more on that [[*Selection framework][later]]), so I don't care much about shorter ways I can type in commands.
 
 #+begin_src emacs-lisp
 (setq inhibit-startup-screen t
@@ -1265,29 +1267,31 @@ This one is pretty easy - I extracted my modeline configuration to [[https://git
 
 Selection framework is a framework for selecting /things/ - the things can be commands when running =execute-command= (~M-x~), files when running =find-file= (~C-x C-f~), symbols when running =describe-symbol= (~C-h o~), or anything, really.
 
-From the many options available, [[https://emacs-helm.github.io/helm/][helm]], [[https://github.com/abo-abo/swiper][Ivy]], [[https://www.gnu.org/software/emacs/manual/html_mono/ido.html][ido]] and [[https://github.com/raxod502/selectrum][selectrum]] seem to be the most popular. I've only tried helm and selectrum, and while both seem capable of being one's daily driver, I prefer selectrum. It works as a drop-in replacement for the built-in completion framework, so many commands use it automatically. Helm, on the other hand, requires reimplementations of these features, which makes it (in my opinion) a little bloated.
+From the many options available, [[https://emacs-helm.github.io/helm/][helm]], [[https://github.com/abo-abo/swiper][Ivy]], [[https://www.gnu.org/software/emacs/manual/html_mono/ido.html][ido]] and [[https://github.com/raxod502/selectrum][selectrum]] and [[https://github.com/minad/vertico][vertico.el]] seem to be the most popular. I've only tried helm, selectrum and vertico, and while all seem capable of being one's daily driver, I prefer vertico. It works as a drop-in replacement for the built-in completion framework, so many commands use it automatically. It is the successor of selectrum, which I'd been using before. Helm, on the other hand, requires reimplementations of these features, which makes it (in my opinion) a little bloated.
 
 I set =minibuffer-follows-selected-frame= to nil, which makes minibuffers bound to the frame they were invoked in. Also sprinkle a little evil bindings on the minibuffer operations.
 
 #+begin_src emacs-lisp
-(igloo-use-package selectrum
+(igloo-use-package vertico
   :straight t
   :custom
   (minibuffer-follows-selected-frame nil)
+  (minibuffer-prompt-properties
+   '(read-only t
+     cursor-intangible t
+     face minibuffer-prompt))
+  (vertico-resize nil)
   :custom-face
-  (selectrum-current-candidate ((t (:weight bold
-                                    :background "#373b47"
-                                    :foreground "#ffffff"))))
+  (vertico-current ((t (:weight bold
+                        :background "#373b47"
+                        :foreground "#ffffff"))))
   :general
-  (selectrum-minibuffer-map
-    "C-v" #'yank
-    "C-w" #'evil-delete-backward-word
-    "C-j" #'selectrum-next-candidate
-    "C-k" #'selectrum-previous-candidate)
-  :preface
-  (declare-function selectrum-mode "selectrum")
+  (vertico-map
+    "C-j" #'vertico-next
+    "C-k" #'vertico-previous)
   :init
-  (selectrum-mode))
+  (vertico-mode)
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode))
 #+end_src
 
 [[https://github.com/raxod502/prescient.el][prescient]] is a package for sorting and filtering the list of candidates shown by the selection framework. Another popular alternative is [[https://github.com/oantolin/orderless][orderless]], which seems to have better performance at the expense of having less powerful queries (last time I checked).
@@ -1308,15 +1312,15 @@ Prescient also sorts the candidates according to the frequency of their use, so 
   (prescient-persist-mode))
 #+end_src
 
-This package is a glue for integrating prescient into selectrum. The =:after= clause only specifies =selectrum=, because this package will load prescient by itself.
+This package is a glue for integrating prescient into vertico. The =:after= clause only specifies =vertico=, because this package will load prescient by itself.
 
 #+begin_src emacs-lisp
-(igloo-use-package selectrum-prescient
-  :after selectrum
+(igloo-use-package vertico-prescient
+  :after vertico
   :straight t
   :demand t
   :config
-  (selectrum-prescient-mode))
+  (vertico-prescient-mode))
 #+end_src
 
 ** Consult
@@ -1367,7 +1371,7 @@ Let's start off with the risky one - when =compilation-read-command= is nil, the
 (compilation-read-command nil)
 #+end_src
 
-By default, projectile tries to auto-detect the "best" selection framework available for its user-querying operations. Since selectrum hooks itself into the most basic level, projectile skips it and tries to use a more "advanced" completion systems that are built-in, so force it to use the default.
+By default, projectile tries to auto-detect the "best" selection framework available for its user-querying operations. Since vertico hooks itself into the most basic level, projectile skips it and tries to use a more "advanced" completion systems that are built-in, so force it to use the default.
 
 #+begin_src emacs-lisp
 (projectile-completion-system 'default)
