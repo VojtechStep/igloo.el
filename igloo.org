@@ -1675,8 +1675,10 @@ Evil is one of the few packages that loads eagerly. It also contributes ~30% to 
   (declare-function evil-state-property "evil-common")
   (declare-function evil-refresh-cursor "evil-common")
   (declare-function evil-local-mode "evil-core")
+  (declare-function evil-initialize "evil-core")
   (declare-function helpful-at-point "helpful")
   :config
+  (require 'cl-lib)
   (evil-mode))
 #+end_src
 
@@ -2247,14 +2249,14 @@ The JSON overrides are required because some languages servers return NULL bytes
   :general
   (normal lsp-mode
     :definer 'minor-mode
-    "gh" (lambda () (interactive) (lsp-hover))
+    ;; "gh" (lambda () (interactive) (lsp-hover))
     "gR" '(lsp-rename :wk "Rename identifier")
     "g." '(lsp-execute-code-action :wk "Code actions"))
   (visual lsp-mode
     :definer 'minor-mode
     "C-j" '(lsp-extend-selection :wk "Extend selection"))
-  :preface
-  (declare-function lsp-hover "lsp-mode")
+  ;; :preface
+  ;; (declare-function lsp-hover "lsp-mode")
   :config
   (delete 'lsp-volar lsp-client-packages) ;; messes up typescript dependency
   (advice-add 'json-parse-string :around
