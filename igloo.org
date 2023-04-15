@@ -1334,7 +1334,7 @@ This package is a glue for integrating prescient into vertico. The =:after= clau
 
 Remember a few paragraphs above, when I complained about Helm being bloated with its own reimplementations of some built-in pickers? Well, turns out it also contains some functionality which is /not/ built-in, and that's where [[https://github.com/minad/consult][consult]] comes in. It implements many of these commands, but on top of the Emacs API, instead of a specific selection system, so it can be used with any system that plugs into the default =completing-read=. That's *E X T E N S I B I L I T Y* baby!
 
-As for the configuration, I bind some keys to actions I use often, and I make consult use projectile's project discovery to correctly search the entire project, not only the =default-directory= of the open buffer.
+As for the configuration, I bind some keys to actions I use often, and I disable preview of Agda buffers, which break things terribly for some reason (e.g. the prompt becomes writable, the candidates disappear, I can't ~C-g~ out of it, and have to move the cursor out of the minibuffer and do ~M-x~ or something to get consult to error out).
 
 The evil integration bit marks some of consult's commands as "jumping", so that when invoked, they push to evil's jump list.
 
@@ -1345,6 +1345,7 @@ The evil integration bit marks some of consult's commands as "jumping", so that 
   (xref-show-xrefs-function #'consult-xref)
   (xref-show-definitions-function #'consult-xref)
   (consult-narrow-key "C-n")
+  (consult-preview-excluded-files '("\\.lagda\\.md" "\\.agda"))
   :general
   ((motion insert) override
     "C-f" #'consult-ripgrep)
