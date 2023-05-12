@@ -2866,7 +2866,7 @@ TODO: split into more sections
   (org-agenda-window-setup 'other-frame)
   (org-agenda-skip-scheduled-if-done t)
   (org-agenda-skip-deadline-if-done t)
-  (org-agenda-clockreport-parameter-plist '(:maxlevel 3 :indent nil :fileskip0 t))
+  (org-agenda-clockreport-parameter-plist '(:maxlevel 3 :indent nil :fileskip0 t :link t))
   (org-agenda-clock-consistency-checks
    '(:max-duration "10:00"
      :min-duration 0
