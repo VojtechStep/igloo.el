@@ -2051,6 +2051,12 @@ There is a secret flag for enabling interpretation of ANSI escape sequences in =
 (magit-process-finish-apply-ansi-colors t)
 #+end_src
 
+Magit can show the diff in word-granularity instead of line-granularity.
+
+#+begin_src emacs-lisp
+(magit-diff-refine-hunk 'all)
+#+end_src
+
 Finally, magit has keybindings for ~h~ and ~l~, so one can't move around with vim bindings in muscle memory. Evil-collection can fortunately change the bindings so that horizontal movement works as expected.
 
 #+begin_src emacs-lisp
