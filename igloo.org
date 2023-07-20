@@ -1998,8 +1998,8 @@ TODO: completing files in folders is fucky.
   :preface
   (declare-function eshell-get-old-input "esh-mode")
   (declare-function eshell-life-is-too-much "esh-mode")
-  (declare-function eshell-interactive-process "esh-cmd")
-  (declare-function eshell-send-eof-to-process "esh-proc")
+  (declare-function eshell-tail-process "esh-cmd")
+  (declare-function eshell-send-eof-to-process "esh-mode")
   (declare-function eshell/pwd "em-dirs")
   (declare-function evil-collection-eshell-setup "modes/eshell/evil-collection-eshell")
   (defun igloo-eshell-C-d (&optional force)
@@ -2009,7 +2009,7 @@ Eshell session if there is no command at the last prompt.
 
 If FORCE is non-nil, always kill the session, regardless of prompt."
     (interactive)
-    (if (eshell-interactive-process)
+    (if (eshell-tail-process)
         (eshell-send-eof-to-process)
       (when (or force
                 (string-empty-p (eshell-get-old-input)))
