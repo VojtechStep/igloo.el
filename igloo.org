@@ -2619,6 +2619,7 @@ TODO: split into config + installation
   (mu4e-confirm-quit nil)
   (mu4e-context-policy 'pick-first)
   (mu4e-compose-context-policy 'ask)
+  (mu4e-compose-dont-reply-to-self t)
   (mu4e-compose-format-flowed t)
   (mu4e-change-filenames-when-moving t)
   (mu4e-use-fancy-chars t)
