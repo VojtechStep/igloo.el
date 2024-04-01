@@ -1529,6 +1529,18 @@ I use the builtin flyspell package with [[http://aspell.net/][aspell]], which is
 (igloo-use-package ispell)
 #+end_src
 
+** Persistent undo history
+
+#+begin_src emacs-lisp
+(igloo-use-package undo-fu-session
+  :straight (:protocol https)
+  :demand t
+  :custom
+  (undo-fu-session-linear t)
+  :config
+  (undo-fu-session-global-mode))
+#+end_src
+
 * Evil
 
 Emacs is a great operating system without a decent text editor, amirite fellas 😂. Up top 🤣!
@@ -1599,6 +1611,14 @@ The state is shown in the modeline, no need to echo it.
 
 #+begin_src emacs-lisp
 (evil-echo-state nil)
+#+end_src
+
+Use evil's custom search module. The only difference I've encountered so far is that I can enable input methods inside the prompt, instead of having to exit to the proper buffer and toggle them there.
+
+EDIT: =evil-search= has fucky highlighing; I couldn't figure out how to un-highlight the search results after pressing =n= / =p=, even with the =evil-flash-delay= variable set; it just doesn't trigger...
+
+#+begin_src emacs-lisp
+;; (evil-search-module 'evil-search)
 #+end_src
 
 ** Keybindings
