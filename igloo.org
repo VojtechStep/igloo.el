@@ -320,7 +320,7 @@ as a normal Emacs process, run BODY straight away."
 
 ** Early init
 :PROPERTIES:
-:header-args: :tangle early-init.el
+:header-args: :tangle early-init.el :noweb tangle
 :END:
 
 Emacs 27 added =early-init.el=, which is a file that gets loaded very early in the process (hence the name). All the code blocks in this section are tangled into the =early-init.el= file, not =init.el=.
@@ -464,15 +464,14 @@ We also disable the blinking cursor, because who came up with that?
 #+begin_src emacs-lisp
 (setq default-frame-alist
       (append
-       '((vertical-scroll-bars . nil)
+       `((vertical-scroll-bars . nil)
          (horizontal-scroll-bars . nil)
-         (font . "JetBrains Mono") ;(ref:default-font)
+         (font . <<default-font-name>>) ;(ref:default-font)
          (background-color . "#1d1f21") ;(ref:frame-bg)
          (background-mode . dark)
          (mouse-color . "#cc6666"))
        default-frame-alist))
 
-(set-face-attribute 'default nil :height 130)
 (setq menu-bar-mode nil
       tab-bar-mode nil
       tool-bar-mode nil
@@ -1065,6 +1064,18 @@ I like seeing a startup message that tells me how long Emacs took to start up (l
 
 The font itself is already set during [[(default-font)][early init]].
 
+#+name: default-font-name
+#+begin_src emacs-lisp :tangle no
+"Iosevka Term SS14 Extended"
+#+end_src
+
+Some functionality relies on ImageMagick to produce images with text (notably PDF overlays). ImageMagick's font specification seems to be different from fontconfig patterns, so it's necessary to write the name differently.
+
+#+name: default-convert-font-name
+#+begin_src emacs-lisp :tangle no
+"Iosevka Term SS14"
+#+end_src
+
 To tell Emacs to use different fonts, one needs to specify on which characters those fonts should be used.
 
 For emojis, I use the [[https://github.com/googlefonts/noto-emoji][Noto Color Emoji]] font. I'm not very sure about the codepoint ranges, if anyone wants to check then feel free, but this seems to work.
@@ -1074,13 +1085,16 @@ For emojis, I use the [[https://github.com/googlefonts/noto-emoji][Noto Color Em
   (let ((ranges '((#x1f000 . #x1f64f)
                   (#x1f900 . #x1f9ff))))
     (dolist (emojis ranges)
-      (set-fontset-font t emojis (font-spec :family "Noto Color Emoji"))))
+      (set-fontset-font t emojis (font-spec :family "Noto Color Emoji" :size 14))))
+  (set-fontset-font t '(#x24b6 . #x24cf) (font-spec :family "Noto Sans Symbols" :size 10))
+  (set-fontset-font t #x26ac (font-spec :family "Noto Sans Symbols2" :size 10))
+  (set-fontset-font t #x2693 (font-spec :family "Noto Sans Symbols" :size 10))
 #+end_src
 
 For symbols, I use Symbols Nerd Font. The codepoint ranges are taken from [[https://github.com/ryanoasis/nerd-fonts/wiki/Glyph-Sets-and-Code-Points][the project wiki]].
 
 #+name: setup-symbols
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle no :noweb eval
 (let ((ranges '(;; Seti-UI + Custom
                 (#xe5fa . #xe62b)
                 ;; Devicons
@@ -3123,7 +3137,8 @@ TODO: =pdf-annot-list-mode-map=
   ((pdf-view-mode) . pdf-history-minor-mode)
   :custom
   (pdf-links-read-link-convert-commands
-   '("-font" "JetBrains-Mono-Regular"
+   '("-family" <<default-convert-font-name>>
+     "-stretch" "Expanded"
      "-pointsize" "%P"
      "-undercolor" "%f"
      "-fill" "%b"
