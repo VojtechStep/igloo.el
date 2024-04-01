@@ -2671,7 +2671,8 @@ TODO: document the shit out of this, maybe extract it to a package?
   (rustic-lsp-setup-p nil)
   (lsp-rust-analyzer-server-display-inlay-hints t)
   (lsp-rust-analyzer-diagnostics-disabled ["unresolved-proc-macro"])
-  (lsp-rust-clippy-preference "on"))
+  (lsp-rust-clippy-preference "on")
+  (lsp-rust-analyzer-cargo-watch-command "clippy"))
 #+end_src
 
 ** Zig
