@@ -1126,6 +1126,13 @@ For symbols, I use Symbols Nerd Font. The codepoint ranges are taken from [[http
     (set-fontset-font t syms "Symbols Nerd Font")))
 #+end_src
 
+For math letters, I use DejaVu Math TeX Gyre.
+
+#+name: setup-mathfont
+#+begin_src emacs-lisp :tangle no
+(set-fontset-font t 'mathematical "DejaVu Math TeX Gyre")
+#+end_src
+
 *** Ligatures
 
 Emacs does not do ligatures automatically, so one has to define a bunch of regexes (regexi?) to specify which character sequences have a change of being merged together. The list of ligatures was initially taken from the JetBrains website, then a [[https://github.com/JetBrains/JetBrainsMono/wiki/List-of-supported-symbols][wiki page]] was created, but it doesn't seem up to date, so this is updated on a best-effort basis.
@@ -1252,6 +1259,7 @@ To prevent a crash, we only mess with the fonts on displays that can render mult
  (when (display-multi-font-p)
    <<setup-emoji>>
    <<setup-symbols>>
+   <<setup-mathfont>>
    <<setup-ligatures>>
    (igloo-scaled-cjk-chars)))
 #+end_src
