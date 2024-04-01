@@ -476,7 +476,8 @@ We also disable the blinking cursor, because who came up with that?
 (setq menu-bar-mode nil
       tab-bar-mode nil
       tool-bar-mode nil
-      blink-cursor-mode nil)
+      blink-cursor-mode nil
+      ring-bell-function #'ignore)
 #+end_src
 
 We set the font because it doesn't make sense to let Emacs load a font that's going to get replaced later. Depending on the font you choose, it might be necessary to change the default height, which is counted in 0.1pt.
