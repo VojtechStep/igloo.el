@@ -2703,6 +2703,46 @@ TODO: document the shit out of this, maybe extract it to a package?
   ((bqn-mode) . (lambda () (set-input-method "BQN-Z"))))
 #+end_src
 
+** OCaml
+
+#+begin_src emacs-lisp
+(eval-when-compile
+  (defvar igloo--byte-compile-current-file byte-compile-current-file)
+  (setq byte-compile-current-file nil))
+(igloo-use-package merlin
+  :straight nil
+  :hook
+  ((merlin-mode) . company-mode)
+  :init
+  (defun igloo-load-merlin-mode ()
+    (let ((buffer (current-buffer)))
+      (run-with-timer
+       0 nil
+       (lambda ()
+         (when (buffer-live-p buffer)
+           (let ((merlin-site-lisp (getenv "MERLIN_MODE")))
+             (unless merlin-site-lisp
+               (error "Merlin mode is not available in the environment"))
+             (when-let ((existing-site-lisp
+                         (condition-case nil
+                             (find-library-name "merlin-mode")
+                           (error nil))))
+               (unless (equal merlin-site-lisp existing-site-lisp)
+                 (error "Another Merlin mode is loaded in this Emacs instance")))
+             (cl-pushnew merlin-site-lisp load-path :test #'equal)
+             (require 'merlin)
+             (if (fboundp 'merlin-mode)
+                 (merlin-mode)))))))))
+(eval-when-compile (setq byte-compile-current-file igloo--byte-compile-current-file))
+#+end_src
+
+#+begin_src emacs-lisp
+(igloo-use-package tuareg
+  :straight t
+  :hook
+  ((tuareg-mode) . igloo-load-merlin-mode))
+#+end_src
+
 * Web
 
 #+begin_src emacs-lisp
