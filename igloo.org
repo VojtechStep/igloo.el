@@ -2246,6 +2246,16 @@ TODO: brag
     :demand t))
 #+end_src
 
+** Code folding
+
+Rudimentary built-in folding. Use ~z m~ to fold all blocks, ~z r~ to open them, ~z a~ to toggle block at point.
+
+#+begin_src emacs-lisp
+(igloo-use-package hideshow
+  :hook
+  ((prog-mode) . hs-minor-mode))
+#+end_src
+
 ** Auto complete
 
 TODO: docs
