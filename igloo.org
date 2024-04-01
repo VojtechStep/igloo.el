@@ -3183,6 +3183,12 @@ SCHEDULED: %t")
 #+end_src
 
 #+begin_src emacs-lisp
+(igloo-use-package org-inlinetask
+  :after org
+  :demand t)
+#+end_src
+
+#+begin_src emacs-lisp
 (igloo-use-package evil-org
   :after org
   :straight t
