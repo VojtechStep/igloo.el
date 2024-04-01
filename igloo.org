@@ -2536,6 +2536,39 @@ TODO: document the shit out of this, maybe extract it to a package?
 (eval-when-compile (setq byte-compile-current-file igloo--byte-compile-current-file))
 #+end_src
 
+** Lean
+
+#+begin_src emacs-lisp
+(eval-when-compile
+  (defvar igloo--byte-compile-current-file byte-compile-current-file)
+  (setq byte-compile-current-file nil))
+(igloo-use-package lean4-mode
+  :straight nil
+  :mode ("\\.lean\\'" . igloo--load-lean-mode)
+  :preface
+  (defun igloo--load-lean-mode ()
+    (let ((buffer (current-buffer)))
+      (run-with-timer
+       0 nil
+       (lambda ()
+         (when (buffer-live-p buffer)
+           (let ((lean-site-lisp (getenv "LEAN_MODE")))
+             (unless lean-site-lisp
+               (error "Lean mode is not available in the environment"))
+             (when-let ((existing-site-lisp
+                         (condition-case nil
+                             (find-library-name "lean4")
+                           (error nil))))
+               (unless (equal lean-site-lisp existing-site-lisp)
+                 (error "Another Lean mode is loaded in this Emacs instance")))
+             (cl-pushnew lean-site-lisp load-path :test #'equal)
+             (require 'lean4-mode)
+             (if (fboundp 'lean4-mode)
+                 (lean4-mode)
+               (error "Lean mode not found")))))))))
+(eval-when-compile (setq byte-compile-current-file igloo--byte-compile-current-file))
+#+end_src
+
 ** C/C++
 
 #+begin_src emacs-lisp
