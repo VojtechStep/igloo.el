@@ -2463,11 +2463,47 @@ TODO: document the shit out of this, maybe extract it to a package?
   (agda-input-tweak-all
     '(agda-input-compose (agda-input-prepend ";")
                          (agda-input-nonempty)))
+  (agda2-highlight-level 'interactive)
   :preface
   (declare-function lsp-register-client "lsp-mode")
   (declare-function make-lsp-client "lsp-mode")
   (declare-function lsp-stdio-connection "lsp-mode")
   (declare-function lsp-activate-on "lsp-mode")
+  (defvar igloo--did-setup-agda-highlight nil)
+  (defun igloo--setup-agda-highlight ()
+    (unless igloo--did-setup-agda-highlight
+      (require 'agda2-highlight)
+      ;; boxify
+      (dolist (face-part '(unsolved-meta
+                           unsolved-constraint
+                           termination-problem
+                           positivity-problem
+                           shadowing-in-telescope
+                           catchall-clause
+                           confluence-problem
+                           missing-definition))
+        (let ((face-name
+               (intern
+                (concat "agda2-highlight-" (symbol-name face-part) "-face"))))
+          (message "Background color was %s" (face-attribute face-name :background))
+          (set-face-attribute
+           face-name nil
+           ;; the order matters here
+           :box `(:line-width 2 :color ,(face-attribute face-name :background))
+           :background 'unspecified)))
+      ;; underline
+      (let ((face 'agda2-highlight-coverage-problem-face))
+        (set-face-attribute
+         face nil
+         :underline (face-attribute face :background)
+         :background 'unspecified))
+      ;; strikethrough
+      (let ((face 'agda2-highlight-deadcode-face))
+        (set-face-attribute
+         face nil
+         :strike-through (face-attribute face :background)
+         :background 'unspecified))
+      (setq igloo--did-setup-agda-highlight t)))
   (defun igloo--load-agda-mode ()
     (let ((buffer (current-buffer)))
       (run-with-timer
@@ -2485,6 +2521,7 @@ TODO: document the shit out of this, maybe extract it to a package?
                  (error "Another agda mode is loaded in this Emacs instance")))
              (let ((agda-mode-dir (file-name-directory agda-mode-file)))
                (cl-pushnew agda-mode-dir load-path :test #'equal)
+               (igloo--setup-agda-highlight)
                (require 'agda2-mode)
                (if (fboundp 'agda2-mode)
                    (agda2-mode)
