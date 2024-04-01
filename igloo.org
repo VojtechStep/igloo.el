@@ -2743,6 +2743,19 @@ TODO: document the shit out of this, maybe extract it to a package?
   ((tuareg-mode) . igloo-load-merlin-mode))
 #+end_src
 
+** Java
+
+Steps I haven't automated yet: jdt-ls /really/ insists on writing logs to its config directory, which in my case is always a nix store path. The solution is to create a temporary directory, copy =/nix/store/...-jdt/share/java/jdtls/config_linux/config.ini= in there, and set ~lsp-java-server-config-dir~ to it.
+Also we need to set ~lsp-java-server-install-dir~ to =/nix/store/...-jdt/share/java/jdtls=
+
+There might be a solution involving not setting the =-configuration= flag, but instead fiddling with some =-D= stuff, c.f. https://github.com/NixOS/nixpkgs/pull/99330#discussion_r799021629.
+
+#+begin_src emacs-lisp
+(igloo-use-package lsp-java
+  :disabled
+  :straight t)
+#+end_src
+
 * Web
 
 #+begin_src emacs-lisp
