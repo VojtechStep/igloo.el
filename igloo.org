@@ -2391,7 +2391,12 @@ Fish keeps its tab-width, since the default in the built-in =fish_indent= comman
     (lsp-register-client
      (make-lsp-client :new-connection (lsp-stdio-connection "nil")
                       :activation-fn (lsp-activate-on "nil")
-                      :server-id 'nix-nil))))
+                      :server-id 'nix-nil))
+    (add-to-list 'lsp-language-id-configuration '(nix-mode . "nixd"))
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-stdio-connection "nixd")
+                      :activation-fn (lsp-activate-on "nixd")
+                      :server-id 'nix-nixd))))
 #+end_src
 
 ** Coq
