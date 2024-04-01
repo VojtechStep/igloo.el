@@ -3282,6 +3282,9 @@ The manual =add-hook= calls are necessary, as =use-package= does not support loc
   :custom
   (tex-command "tectonic")
   (latex-run-command "tectonic")
+  :general
+  (insert tex-mode-map
+    "\"" #'self-insert-command)
   :config
   (setq-mode-local tex-mode tex-start-commands nil))
 #+end_src
