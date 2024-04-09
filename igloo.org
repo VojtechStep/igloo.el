@@ -1122,13 +1122,34 @@ For symbols, I use Symbols Nerd Font. The codepoint ranges are taken from [[http
                 (#xe000 . #xe00d))))
   (dolist (syms ranges)
     (set-fontset-font t syms "Symbols Nerd Font")))
+(let ((ranges '(;; Heavy asterisk
+                #x2731
+                ;; Wide equals sign
+                #xff1d)))
+  (dolist (syms ranges)
+    (set-fontset-font t syms <<default-font-name>>)))
 #+end_src
 
-For math letters, I use DejaVu Math TeX Gyre.
+For math letters, I use DejaVu Math TeX Gyre. Some manual fiddling needed, c.f. https://mathstodon.xyz/@VojtechStep/112241396450544301.
 
 #+name: setup-mathfont
 #+begin_src emacs-lisp :tangle no
-(set-fontset-font t 'mathematical "DejaVu Math TeX Gyre")
+(let ((ranges '(mathematical
+                #x210a
+                #x210b
+                #x2110
+                #x2112
+                #x2113
+                #x2118
+                #x211b
+                #x212c
+                #x212f
+                #x2130
+                #x2131
+                #x2133
+                #x2134)))
+  (dolist (range ranges)
+    (set-fontset-font t range "DejaVu Math TeX Gyre")))
 #+end_src
 
 *** Ligatures
