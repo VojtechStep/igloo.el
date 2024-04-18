@@ -2800,12 +2800,12 @@ TODO: split into config + installation
   ((mu4e-compose-hook) . company-mode)
   ((mu4e-compose-hook) . flyspell-mode)
   :custom
+  (mu4e-read-option-use-builtin nil)
   (mu4e-completing-read-function #'completing-read)
   (mu4e-get-mail-command "mbsync-par")
   (mu4e-confirm-quit nil)
   (mu4e-context-policy 'pick-first)
   (mu4e-compose-context-policy 'ask)
-  (mu4e-compose-dont-reply-to-self t)
   (mu4e-compose-format-flowed t)
   (mu4e-change-filenames-when-moving t)
   (mu4e-use-fancy-chars t)
@@ -2825,6 +2825,7 @@ TODO: split into config + installation
   (mu4e-headers-personal-mark '("p" . "🤓"))
   (mu4e-headers-calendar-mark  '("c" . "📅"))
   (mail-user-agent 'mu4e-user-agent)
+  (message-dont-reply-to-names #'mu4e-personal-or-alternative-address-p)
   (message-send-mail-function #'message-send-mail-with-sendmail)
   (sendmail-program "msmtp")
   (message-sendmail-f-is-evil t)
@@ -2839,7 +2840,7 @@ TODO: split into config + installation
   (declare-function evil-collection-mu4e-setup "modes/mu4e/evil-collection-mu4e")
   (declare-function evil-collection-inhibit-insert-state "evil-collection")
   (declare-function message-send-mail-with-sendmail "message")
-  (declare-function mu4e~draft-from-construct "mu4e-draft")
+  (declare-function mu4e-personal-or-alternative-address-p "mu4e-contacts")
   (declare-function make-mu4e-context "mu4e-context" t t)
   (declare-function mu4e-message "mu4e-helpers")
   (defmacro igloo-mu4e-make-context (name email &optional sent drafts trash &rest vars)
@@ -2863,8 +2864,8 @@ TODO: split into config + installation
     (lambda (msg)
       (when msg
         (string-match-p
-        (rx bol "/" (literal name) "/")
-        (mu4e-message-field msg :maildir)))))
+         (rx bol "/" (literal name) "/")
+         (mu4e-message-field msg :maildir)))))
   :config
   (cl-pushnew '("View in browser"
                 . mu4e-action-view-in-browser)
@@ -2872,8 +2873,8 @@ TODO: split into config + installation
               :test #'equal)
   (evil-collection-mu4e-setup)
   (dolist (s '(mu4e-main-mode-map
-              mu4e-headers-mode-map
-              mu4e-view-mode-map))
+               mu4e-headers-mode-map
+               mu4e-view-mode-map))
     (evil-collection-inhibit-insert-state s))
   (general-def 'normal mu4e-main-mode-map
     "u" nil
